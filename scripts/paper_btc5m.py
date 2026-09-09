@@ -129,9 +129,8 @@ async def main():
     logging.info(
         "╚═════╝   ╚═════╝    ╚═╝          ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝"
     )
-    logging.info("")
     logging.info(
-        "                         B Y   A R K I L I N U X"
+        "                         by   Arkilinux"
     )
     logging.info("")
 
@@ -144,7 +143,7 @@ async def main():
 
     logging.info(
         BOLD
-        + "Starting balance: $%.2f | Entry size: $%.2f"
+        + "Starting balance: $%.2f | Stake amount: $%.2f"
         + RESET,
         starting_balance,
         entry_size,
@@ -417,8 +416,7 @@ async def main():
                             ORANGE
                             + BOLD
                             + UNDERLINE
-                            + "(Paper) Entry %s | "
-                            "Move: %+.2f | "
+                            + "(Paper) Entry %s $%+.2f | "
                             "Range: %.2f | "
                             "Stake: $%.2f | "
                             "Balance: $%.2f | "
@@ -527,8 +525,7 @@ async def main():
 
                                 logging.info(
                                     exit_color
-                                    + "(Paper) Exit %s | "
-                                    "Move: %+.2f | "
+                                    + "(Paper) Exit %s $%+.2f | "
                                     "Price: %.2f | "
                                     "Shares: %.2f | "
                                     "P&L: %s %+.2f USD | "
