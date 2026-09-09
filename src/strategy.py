@@ -2,6 +2,7 @@ import logging
 import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 
 log = logging.getLogger(__name__)
@@ -108,78 +109,95 @@ class Strategy:
             exist_ok=True,
         )
 
+        # Timestamp siempre en hora de Madrid, con milisegundos.
         timestamp = datetime.now(
             timezone.utc
-        ).isoformat()
+        ).astimezone(
+            ZoneInfo("Europe/Madrid")
+        ).strftime("%d/%m/%Y %H:%M:%S.%f")[:-3]
 
         if move != "":
-
             try:
                 move_text = f"{float(move):+.2f}"
             except (TypeError, ValueError):
                 move_text = str(move)
-
         else:
             move_text = "-"
 
         if price != "":
-
             try:
                 price_text = f"{float(price):.4f}"
             except (TypeError, ValueError):
                 price_text = str(price)
-
         else:
             price_text = "-"
 
         if shares != "":
-
             try:
                 shares_text = f"{float(shares):.4f}"
             except (TypeError, ValueError):
                 shares_text = str(shares)
-
         else:
             shares_text = "-"
 
         if usdc != "":
-
             try:
                 usdc_text = f"${float(usdc):.2f}"
             except (TypeError, ValueError):
                 usdc_text = str(usdc)
-
         else:
             usdc_text = "-"
 
-        if result and result_usd != "":
-
+        # P&L: si existe, mostramos solo el valor numérico.
+        if result_usd != "":
             try:
-                pnl_text = (
-                    f"{result} "
-                    f"{float(result_usd):+.2f} USD"
-                )
+                pnl_value = float(result_usd)
+                pnl_text = f"{pnl_value:+.2f} USD"
             except (TypeError, ValueError):
-                pnl_text = (
-                    f"{result} "
-                    f"{result_usd}"
-                )
-
+                pnl_text = str(result_usd)
         else:
+            pnl_text = None
 
-            pnl_text = "-"
+        # Colorear únicamente la palabra del event.
+        if event in ("PAPER_ENTRY", "LIVE_ENTRY"):
+            event_text = event.replace("_ENTRY", "")
+            event_text = f"\\033[38;5;208m{event_text}\\033[0m"
+        elif event in ("PAPER_HEDGE", "LIVE_HEDGE"):
+            event_text = event.replace("_HEDGE", "")
+            event_text = f"\\033[94m{event_text}\\033[0m"
+        else:
+            event_text = event
+
+        # Colorear únicamente el número del P&L.
+        if pnl_text is not None:
+            try:
+                pnl_value = float(result_usd)
+                pnl_number = f"{pnl_value:+.2f}"
+                if pnl_value > 0:
+                    pnl_number = f"\\033[92m{pnl_number}\\033[0m"
+                elif pnl_value < 0:
+                    pnl_number = f"\\033[91m{pnl_number}\\033[0m"
+                pnl_display = f"P&L: ${pnl_number} "
+            except (TypeError, ValueError):
+                pnl_display = f"P&L: {pnl_text}"
+        else:
+            pnl_display = None
+
+        # Si hay P&L, no mostramos stake/value.
+        value_text = (
+            pnl_display
+            if pnl_display is not None
+            else f"stake/value: {usdc_text}"
+        )
 
         line = (
-            f"timestamp: {timestamp} | "
-            f"round: {self.round_id} | "
-            f"event: {event} | "
-            f"direction: {direction or '-'} | "
-            f"move: {move_text} | "
-            f"price: {price_text} | "
-            f"shares: {shares_text} | "
-            f"stake/value: {usdc_text} | "
-            f"P&L: {pnl_text} | "
-            f"reason: {reason or '-'}"
+            f"Round: {self.round_id} {timestamp}| "
+            f"Event: {event_text} {direction or '-'}| "
+            f"Price: BTC {move_text} | "
+            f"Range: {price_text} | "
+            f"Shares: {shares_text} | "
+            f"{value_text} | "
+            f"Reason: {reason or '-'}"
         )
 
         with open(

@@ -25,10 +25,49 @@ from src.strategy import Strategy
 # LOGGING
 # =============================================================
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(message)s",
+from logging.handlers import TimedRotatingFileHandler
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+LOG_DIR = ROOT / "logs" / "paper"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+LOG_FILE = LOG_DIR / "paper.log"
+
+
+file_handler = TimedRotatingFileHandler(
+    filename=LOG_FILE,
+    when="midnight",
+    interval=1,
+    backupCount=90,
+    encoding="utf-8",
 )
+
+file_handler.suffix = "%Y-%m-%d"
+
+
+console_handler = logging.StreamHandler()
+
+
+formatter = logging.Formatter(
+    "%(asctime)s | %(message)s"
+)
+
+
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+
+logger = logging.getLogger()
+
+logger.setLevel(logging.INFO)
+
+logger.handlers.clear()
+
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 
 # =============================================================
@@ -97,9 +136,9 @@ async def main():
     logging.info("")
 
     logging.warning(
-        RED
+        GREEN
         + BOLD
-        + "================ PAPER MODE ================"
+        + "PAPER MODE - PAPER MODE - PAPER MODE - PAPER MODE - PAPER MODE - PAPER MODE - PAPER MODE - PAPER MODE"
         + RESET
     )
 
@@ -219,14 +258,11 @@ async def main():
                 if now - last_log >= 2:
 
                     logging.info(
-                        "Paper | "
-                        "Time: %.0fs | "
-                        "BTC: $%.2f %+.2f | "
+                        "%.0fs | "
+                        "BTC: $%+.2f | "
                         "Action: WAIT next round",
                         
                         remaining,
-
-                        feed.state.price,
 
                         feed.state.price
                         - strategy.round_start_price,
@@ -256,7 +292,7 @@ async def main():
 
                 logging.warning(
                     RED
-                    + "Paper | Polymarket error: %s"
+                    + "(Paper) Polymarket error: %s"
                     + RESET,
                     exc,
                 )
@@ -300,16 +336,12 @@ async def main():
                             log_price = decision.contract_price
 
                     logging.info(
-                        "Paper | "
-                        "Time: %.0fs | "
-                        "BTC: $%.2f %+.2f | "
+                        "%.0fs | "
+                        "BTC: $%+.2f | "
                         "Action: %s %s | "
-                        "Range: %s | "
-                        "Dir: %s",
+                        "Contract: %s %s",
 
                         remaining,
-
-                        feed.state.price,
 
                         decision.move,
 
@@ -349,7 +381,7 @@ async def main():
                     ):
 
                         logging.warning(
-                            "Paper | invalid entry price"
+                            "(Paper) Invalid entry price"
                         )
 
                     elif paper_balance < entry_size:
@@ -357,7 +389,7 @@ async def main():
                         logging.warning(
                             RED
                             + BOLD
-                            + "Paper | Entry skipped | "
+                            + "(Paper) Entry skipped | "
                             "Insufficient balance: $%.2f"
                             + RESET,
                             paper_balance,
@@ -385,7 +417,7 @@ async def main():
                             ORANGE
                             + BOLD
                             + UNDERLINE
-                            + "Paper | Entry %s | "
+                            + "(Paper) Entry %s | "
                             "Move: %+.2f | "
                             "Range: %.2f | "
                             "Stake: $%.2f | "
@@ -495,7 +527,7 @@ async def main():
 
                                 logging.info(
                                     exit_color
-                                    + "Paper | Exit %s | "
+                                    + "(Paper) Exit %s | "
                                     "Move: %+.2f | "
                                     "Price: %.2f | "
                                     "Shares: %.2f | "
@@ -569,7 +601,7 @@ async def main():
                                     BLUE
                                     + BOLD
                                     + UNDERLINE
-                                    + "Paper | Hedge %s | "
+                                    + "(Paper) Hedge %s | "
                                     "Main price: %.2f | "
                                     "Opposite: %s | "
                                     "Opposite price: %.2f | "
@@ -618,7 +650,7 @@ async def main():
                     except Exception as exc:
 
                         logging.warning(
-                            "Paper | Exit price unavailable: %s",
+                            "(Paper) Exit price unavailable: %s",
                             exc,
                         )
 
@@ -674,7 +706,7 @@ async def main():
 
                             logging.info(
                                 exit_color
-                                + "Paper | Exit %s | "
+                                + "(Paper) Exit %s | "
                                 "Round: %s | "
                                 "Move: %+.2f | "
                                 "Price: %.2f | "
@@ -707,7 +739,7 @@ async def main():
             except Exception as exc:
 
                 logging.warning(
-                    "Paper | Loop error: %s",
+                    "(Paper) Loop error: %s",
                     exc,
                 )
 

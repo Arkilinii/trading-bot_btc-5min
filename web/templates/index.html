@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+   content="width=device-width, initial-scale=1.0">
+
+<title>Bot Trading</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+
+    margin: 0;
+
+    background: #111;
+
+    color: #eee;
+
+    font-family: Cambria, Georgia, serif;
+}
+
+.container {
+
+    width: 95%;
+
+    max-width: 1500px;
+
+    margin: 30px auto;
+}
+
+h1 {
+    margin: 0;
+}
+
+.subtitle {
+
+    color: #888;
+
+    margin-top: 5px;
+
+    margin-bottom: 25px;
+}
+
+.top {
+
+    background: #1b1b1b;
+
+    padding: 20px;
+
+    border-radius: 10px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 20px;
+}
+
+.mode-area {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+}
+
+
+/* ========================================================= */
+/* PAPER / LIVE SWITCH */
+/* ========================================================= */
+
+.mode-switch {
+
+    display: flex;
+
+    align-items: center;
+
+    height: 56px;
+
+    background: #292929;
+
+    border: 1px solid #3d3d3d;
+
+    border-radius: 10px;
+
+    padding: 6px 12px;
+
+    gap: 8px;
+
+    min-width: 250px;
+
+    box-shadow:
+        inset 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+
+/* ========================================================= */
+/* LABELS */
+/* ========================================================= */
+
+.mode-label {
+
+    width: 85px;
+
+    text-align: center;
+
+    font-weight: bold;
+
+    font-size: 15px;
+
+    user-select: none;
+
+    transition:
+        color 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.paper-label {
+
+    color: #32d74b;
+}
+
+.live-label {
+
+    color: #666;
+}
+
+
+/* ========================================================= */
+/* SWITCH */
+/* ========================================================= */
+
+.mode-toggle {
+
+    position: relative;
+
+    width: 70px;
+
+    height: 40px;
+
+    padding: 0;
+
+    border: none;
+
+    border-radius: 20px;
+
+    background: #3a3a3a;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease;
+}
+
+.mode-toggle:hover {
+
+    background: #444;
+}
+
+.mode-toggle:disabled {
+
+    cursor: not-allowed;
+
+    opacity: 0.7;
+}
+
+
+/* ========================================================= */
+/* CÍRCULO */
+/* ========================================================= */
+
+.toggle-circle {
+
+    position: absolute;
+
+    top: 5px;
+
+    left: 5px;
+
+    width: 30px;
+
+    height: 30px;
+
+    border-radius: 50%;
+
+    background: #32d74b;
+
+    box-shadow:
+        0 2px 5px rgba(0, 0, 0, 0.45);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+
+/* ========================================================= */
+/* PAPER ACTIVO */
+/* ========================================================= */
+
+.mode-toggle.paper-active {
+
+    background: #214d29;
+}
+
+.mode-toggle.paper-active .toggle-circle {
+
+    transform: translateX(0);
+
+    background: #32d74b;
+}
+
+
+/* ========================================================= */
+/* LIVE ACTIVO */
+/* ========================================================= */
+
+.mode-toggle.live-active {
+
+    background: #5a2421;
+}
+
+.mode-toggle.live-active .toggle-circle {
+
+    transform: translateX(30px);
+
+    background: #ff453a;
+}
+
+
+/* ========================================================= */
+/* LABEL LIVE ACTIVO */
+/* ========================================================= */
+
+.mode-switch.live-selected .paper-label {
+
+    color: #666;
+}
+
+.mode-switch.live-selected .live-label {
+
+    color: #ff453a;
+}
+
+
+/* ========================================================= */
+/* LABEL PAPER ACTIVO */
+/* ========================================================= */
+
+.mode-switch.paper-selected .paper-label {
+
+    color: #32d74b;
+}
+
+.mode-switch.paper-selected .live-label {
+
+    color: #666;
+}
+
+
+/* ========================================================= */
+/* STATUS */
+/* ========================================================= */
+
+.status {
+
+    font-weight: bold;
+
+    font-size: 16px;
+
+    margin-top: 0;
+}
+
+.running {
+    color: #32d74b;
+}
+
+.stopped {
+    color: #ff453a;
+}
+
+.live-warning {
+
+    color: #ff453a;
+
+    font-weight: bold;
+
+    display: none;
+
+    margin-top: 8px;
+}
+
+
+/* ========================================================= */
+/* BUTTONS */
+/* ========================================================= */
+
+.buttons {
+
+    display: flex;
+
+    gap: 10px;
+}
+
+button {
+
+    border: none;
+
+    padding: 12px 22px;
+
+    border-radius: 7px;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    font-family: Cambria, Georgia, serif;
+}
+
+.start {
+
+    background: #32d74b;
+
+    color: black;
+}
+
+.stop {
+
+    background: #ff453a;
+
+    color: white;
+}
+
+button:disabled {
+
+    opacity: 0.35;
+
+    cursor: not-allowed;
+}
+
+
+/* ========================================================= */
+/* LOG PANEL */
+/* ========================================================= */
+
+.panel {
+
+    background: #1b1b1b;
+
+    padding: 20px;
+
+    border-radius: 10px;
+}
+
+.panel-header {
+    
+    position: relative;
+    
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    margin-bottom: 15px;
+}
+
+
+/* ========================================================= */
+/* NOW + FECHAS */
+/* ========================================================= */
+
+.log-navigation {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+}
+
+
+/* ========================================================= */
+/* BOTÓN NOW */
+/* ========================================================= */
+
+#nowButton {
+
+    background: #292929;
+
+    color: white;
+
+    border: 1px solid #444;
+
+    padding: 10px 16px;
+
+    border-radius: 6px;
+
+    font-size: 15px;
+
+    font-family: Cambria, Georgia, serif;
+
+    cursor: pointer;
+}
+
+#nowButton:hover {
+
+    background: #3a3a3a;
+}
+
+#nowButton.active {
+
+    background: #444;
+
+    border-color: #666;
+}
+
+
+/* ========================================================= */
+/* SELECT FECHAS */
+/* ========================================================= */
+
+#day {
+
+    background: #222;
+
+    color: white;
+
+    border: 1px solid #444;
+
+    padding: 10px;
+
+    border-radius: 6px;
+
+    font-size: 15px;
+
+    font-family: Cambria, Georgia, serif;
+}
+
+#day.history-placeholder {
+
+    color: #666;
+}
+
+#day option {
+
+    background: #222;
+
+    color: white;
+}
+
+#day option.history-option {
+
+    color: #666;
+}
+
+
+/* ========================================================= */
+/* LOGS */
+/* ========================================================= */
+
+#logs {
+
+    background: #080808;
+
+    border-radius: 7px;
+
+    padding: 15px;
+
+    height: 700px;
+
+    overflow-y: auto;
+
+    white-space: pre-wrap;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 13px;
+
+    line-height: 1.45;
+}
+
+
+/* ========================================================= */
+/* IR AL FINAL */
+/* ========================================================= */
+
+#goBottom {
+
+    display: block;
+
+    margin: 8px auto 0;
+
+    padding: 5px 12px;
+
+    background: #292929;
+
+    color: #ffffff;
+
+    border: 1px solid #444;
+
+    border-radius: 6px;
+
+    font-family: Cambria, Georgia, serif;
+
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+#goBottom:hover {
+
+    background: #3a3a3a;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Bot trading - BTC 5m Strategy - Polymarket</h1>
+
+<div class="subtitle">
+By Arkilinux
+</div>
+
+<!-- ===================================================== -->
+
+<!-- CONTROL -->
+
+<!-- ===================================================== -->
+
+<div class="top">
+
+<div>
+
+<div class="mode-area">
+
+<!-- ================================================= -->
+
+<!-- PAPER / LIVE SWITCH -->
+
+<!-- ================================================= -->
+
+<div
+    class="mode-switch paper-selected"
+    id="modeSwitch">
+
+
+<div class="mode-label paper-label">
+    PAPER
+</div>
+
+
+<button
+    id="modeToggle"
+    class="mode-toggle paper-active"
+    onclick="toggleMode()"
+    aria-label="Cambiar entre Paper y Live">
+
+    <span class="toggle-circle"></span>
+
+</button>
+
+
+<div class="mode-label live-label">
+    LIVE
+</div>
+
+
+</div>
+
+<!-- ================================================= -->
+
+<!-- STATUS -->
+
+<!-- ================================================= -->
+
+<div
+    id="status"
+    class="status stopped">
+
+🔴 STOPPED
+
+</div>
+
+</div>
+
+<div
+    id="liveWarning"
+    class="live-warning">
+
+⚠️ OPERACIONES REALES ⚠️ OPERACIONES REALES ⚠️
+
+</div>
+
+</div>
+
+<div class="buttons">
+
+<button
+ id="startButton"
+ class="start"
+ onclick="startBot()">
+
+▶ START
+
+</button>
+
+<button
+ id="stopButton"
+ class="stop"
+ onclick="stopBot()"
+ disabled>
+
+■ STOP
+
+</button>
+
+</div>
+
+</div>
+
+<!-- ===================================================== -->
+
+<!-- LOGS -->
+
+<!-- ===================================================== -->
+
+<div class="panel">
+
+<div class="panel-header">
+
+<div class="log-navigation">
+
+<button
+ id="nowButton"
+ class="active"
+ onclick="showNow()">
+
+
+Now
+
+
+</button>
+
+<select
+ id="day"
+ onchange="loadHistory()"> </select>
+
+</div>
+
+</div>
+
+<pre id="logs">
+Cargando...
+</pre>
+
+<button
+ id="goBottom"
+ onclick="goToBottom()">
+
+↓ Go to the bottom ↓
+
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+
+// ============================================================
+// MODE
+// ============================================================
+
+let currentMode = "paper";
+
+let currentView = "now";
+
+
+function getMode() {
+
+    return currentMode;
+
+}
+
+
+function toggleMode() {
+
+    // No permitir cambiar mientras el bot está ejecutándose
+
+    const status =
+        document.getElementById("status");
+
+    if (status.classList.contains("running")) {
+
+        return;
+
+    }
+
+
+    if (currentMode === "paper") {
+
+        currentMode = "live";
+
+    } else {
+
+        currentMode = "paper";
+
+    }
+
+
+    updateModeUI();
+
+    loadDays();
+
+    showNow();
+
+}
+
+
+function updateModeUI() {
+
+    const modeSwitch =
+        document.getElementById(
+            "modeSwitch"
+        );
+
+    const toggle =
+        document.getElementById(
+            "modeToggle"
+        );
+
+    const warning =
+        document.getElementById(
+            "liveWarning"
+        );
+
+
+    if (currentMode === "live") {
+
+        toggle.classList.remove(
+            "paper-active"
+        );
+
+        toggle.classList.add(
+            "live-active"
+        );
+
+
+        modeSwitch.classList.remove(
+            "paper-selected"
+        );
+
+        modeSwitch.classList.add(
+            "live-selected"
+        );
+
+
+        warning.style.display =
+            "block";
+
+    } else {
+
+        toggle.classList.remove(
+            "live-active"
+        );
+
+        toggle.classList.add(
+            "paper-active"
+        );
+
+
+        modeSwitch.classList.remove(
+            "live-selected"
+        );
+
+        modeSwitch.classList.add(
+            "paper-selected"
+        );
+
+
+        warning.style.display =
+            "none";
+
+    }
+
+}
+
+
+// ============================================================
+// STATUS
+// ============================================================
+
+async function updateStatus() {
+
+    const response =
+        await fetch(
+            "/api/status"
+        );
+
+    const data =
+        await response.json();
+
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+    const start =
+        document.getElementById(
+            "startButton"
+        );
+
+    const stop =
+        document.getElementById(
+            "stopButton"
+        );
+
+    const toggle =
+        document.getElementById(
+            "modeToggle"
+        );
+
+
+    if (data.running) {
+
+        status.textContent =
+            "🟢 RUNNING";
+
+        status.className =
+            "status running";
+
+        start.disabled =
+            true;
+
+        stop.disabled =
+            false;
+
+        toggle.disabled =
+            true;
+
+
+        // Sincronizar modo con el bot
+
+        currentMode =
+            data.mode;
+
+        updateModeUI();
+
+
+    } else {
+
+        status.textContent =
+            "🔴 STOPPED";
+
+        status.className =
+            "status stopped";
+
+        start.disabled =
+            false;
+
+        stop.disabled =
+            true;
+
+        toggle.disabled =
+            false;
+
+    }
+
+}
+
+
+// ============================================================
+// START
+// ============================================================
+
+async function startBot() {
+
+    const mode =
+        getMode();
+
+
+    // ========================================================
+    // LIVE CONFIRMATION
+    // ========================================================
+
+    if (mode === "live") {
+
+        const confirmed =
+            confirm(
+                "⚠️ ATENCIÓN\n\n"
+                + "Has seleccionado LIVE.\n\n"
+                + "El bot realizará operaciones "
+                + "REALES en Polymarket "
+                + "utilizando fondos reales.\n\n"
+                + "¿Quieres iniciar el bot LIVE?"
+            );
+
+
+        if (!confirmed) {
+
+            return;
+
+        }
+
+    }
+
+
+    const response =
+        await fetch(
+            "/api/start",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify(
+                    {
+                        mode: mode
+                    }
+                )
+            }
+        );
+
+
+    const data =
+        await response.json();
+
+
+    if (!data.success) {
+
+        alert(
+            data.error
+            || "No se pudo iniciar el bot."
+        );
+
+        return;
+
+    }
+
+
+    updateStatus();
+
+    loadDays();
+
+    setTimeout(
+        showNow,
+        1000
+    );
+
+}
+
+
+// ============================================================
+// STOP
+// ============================================================
+
+async function stopBot() {
+
+    const response =
+        await fetch(
+            "/api/stop",
+            {
+                method: "POST"
+            }
+        );
+
+
+    const data =
+        await response.json();
+
+
+    if (!data.success) {
+
+        alert(
+            "El bot no estaba ejecutándose."
+        );
+
+    }
+
+
+    updateStatus();
+
+}
+
+
+// ============================================================
+// SHOW NOW
+// ============================================================
+
+async function showNow() {
+
+    currentView = "now";
+
+
+    const nowButton =
+        document.getElementById(
+            "nowButton"
+        );
+
+
+    nowButton.classList.add(
+        "active"
+    );
+
+    // Al mostrar NOW, el selector conserva
+    // su opción fija "History" como referencia.
+    const select =
+        document.getElementById(
+            "day"
+        );
+
+    select.value = "";
+
+    select.classList.add(
+        "history-placeholder"
+    );
+
+
+    await loadCurrentLog();
+
+}
+
+
+// ============================================================
+// CURRENT LOG
+// ============================================================
+
+async function loadCurrentLog() {
+
+    const mode =
+        getMode();
+
+
+    const logs =
+        document.getElementById(
+            "logs"
+        );
+
+
+    // Guardar posición actual para no mandar
+    // al usuario al final cada vez que se actualizan logs.
+
+    const previousScrollTop =
+        logs.scrollTop;
+
+
+    const response =
+        await fetch(
+            "/api/log?mode="
+            + mode
+        );
+
+
+    const data =
+        await response.json();
+
+
+    // IMPORTANTE:
+    // innerHTML permite mostrar los colores
+    // convertidos por app.py.
+
+    logs.innerHTML =
+        data.log;
+
+
+    logs.scrollTop =
+        previousScrollTop;
+
+}
+
+
+// ============================================================
+// DAYS
+// ============================================================
+
+async function loadDays() {
+
+    const mode =
+        getMode();
+
+
+    const response =
+        await fetch(
+            "/api/days?mode="
+            + mode
+        );
+
+
+    const data =
+        await response.json();
+
+
+    const select =
+        document.getElementById(
+            "day"
+        );
+
+
+    select.innerHTML =
+        "";
+
+    // Opción fija para identificar el selector de HISTORY.
+    // Se mantiene arriba y aparece en gris cuando está seleccionada.
+    const historyOption =
+        document.createElement(
+            "option"
+        );
+
+    historyOption.value =
+        "";
+
+    historyOption.textContent =
+        "History";
+
+    historyOption.className =
+        "history-option";
+
+    select.appendChild(
+        historyOption
+    );
+
+    select.classList.add(
+        "history-placeholder"
+    );
+
+
+    const months = [
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre"
+    ];
+
+
+    data.days.forEach(date => {
+
+        // NOW ya no se añade al selector.
+        if (date === "NOW") {
+
+            return;
+
+        }
+
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+
+        // El value INTERNO no cambia.
+
+        option.value =
+            date;
+
+
+        const [
+            year,
+            month,
+            day
+        ] = date.split("-");
+
+
+        option.textContent =
+            `${day} ${months[parseInt(month, 10) - 1]} ${year.slice(2)}`;
+
+
+        select.appendChild(
+            option
+        );
+
+    });
+
+    // HISTORY queda seleccionado por defecto.
+    select.value = "";
+
+}
+
+
+// ============================================================
+// HISTORY
+// ============================================================
+
+async function loadHistory() {
+
+    const select =
+        document.getElementById(
+            "day"
+        );
+
+
+    const date =
+        select.value;
+
+
+    // La opción fija "History" no carga ningún log.
+    // Solo sirve como etiqueta cuando no se ha seleccionado una fecha.
+    if (!date) {
+
+        select.classList.add(
+            "history-placeholder"
+        );
+
+        return;
+
+    }
+
+
+    select.classList.remove(
+        "history-placeholder"
+    );
+
+
+    currentView = "history";
+
+
+    const nowButton =
+        document.getElementById(
+            "nowButton"
+        );
+
+
+    nowButton.classList.remove(
+        "active"
+    );
+
+
+    const mode =
+        getMode();
+
+
+    const response =
+        await fetch(
+            "/api/history?mode="
+            + mode
+            + "&date="
+            + encodeURIComponent(
+                date
+            )
+        );
+
+
+    const data =
+        await response.json();
+
+
+    const logs =
+        document.getElementById(
+            "logs"
+        );
+
+
+    logs.innerHTML =
+        data.log;
+
+
+    logs.scrollTop =
+        0;
+
+}
+
+
+// ============================================================
+// GO TO BOTTOM
+// ============================================================
+
+function goToBottom() {
+
+    const logs =
+        document.getElementById(
+            "logs"
+        );
+
+
+    logs.scrollTop =
+        logs.scrollHeight;
+
+}
+
+
+// ============================================================
+// INIT
+// ============================================================
+
+async function init() {
+
+    updateModeUI();
+
+    await updateStatus();
+
+    await loadDays();
+
+    await showNow();
+
+}
+
+
+init();
+
+
+// ============================================================
+// LIVE REFRESH
+// ============================================================
+
+setInterval(
+    async () => {
+
+        await updateStatus();
+
+
+        // Solo actualizamos automáticamente
+        // cuando estamos viendo NOW.
+
+        if (currentView === "now") {
+
+            await loadCurrentLog();
+
+        }
+
+    },
+    2000
+);
+
+
+</script>
+
+</body>
+
+</html>

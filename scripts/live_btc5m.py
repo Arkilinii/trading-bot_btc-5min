@@ -25,10 +25,49 @@ from src.strategy import Strategy
 # LOGGING
 # =============================================================
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(message)s",
+from logging.handlers import TimedRotatingFileHandler
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+LOG_DIR = ROOT / "logs" / "paper"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+LOG_FILE = LOG_DIR / "paper.log"
+
+
+file_handler = TimedRotatingFileHandler(
+    filename=LOG_FILE,
+    when="midnight",
+    interval=1,
+    backupCount=90,
+    encoding="utf-8",
 )
+
+file_handler.suffix = "%Y-%m-%d"
+
+
+console_handler = logging.StreamHandler()
+
+
+formatter = logging.Formatter(
+    "%(asctime)s | %(message)s"
+)
+
+
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+
+logger = logging.getLogger()
+
+logger.setLevel(logging.INFO)
+
+logger.handlers.clear()
+
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 
 # =============================================================
