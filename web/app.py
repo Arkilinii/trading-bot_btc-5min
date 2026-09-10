@@ -23,6 +23,9 @@ LIVE_SCRIPT = ROOT / "script" / "live_btc5m.py"
 PAPER_LOG_DIR = ROOT / "logs" / "paper"
 LIVE_LOG_DIR = ROOT / "logs" / "live"
 
+PAPER_TRADES_DIR = ROOT / "trades" / "paper"
+LIVE_TRADES_DIR = ROOT / "trades" / "live"
+
 
 # =============================================================
 # FLASK
@@ -43,17 +46,13 @@ bot_mode = None
 # ANSI -> HTML
 # =============================================================
 
-ANSI_RE = re.compile(r"\x1b\[([0-9;]*)m")
+ANSI_RE = re.compile(
+    r"\x1b\[([0-9;]*)m"
+)
 
 
 def ansi_to_html(text):
-    """
-    Convierte los colores ANSI utilizados por el bot
-    en HTML para que se vean correctamente en el navegador.
-    """
 
-    # Escapamos el contenido real del log para que nunca
-    # se interprete como HTML.
     text = html.escape(text)
 
     output = []
@@ -64,21 +63,29 @@ def ansi_to_html(text):
     color = None
 
     def render_segment(segment):
+
         if not segment:
             return ""
 
         styles = []
 
         if color:
-            styles.append(f"color:{color}")
+            styles.append(
+                f"color:{color}"
+            )
 
         if bold:
-            styles.append("font-weight:bold")
+            styles.append(
+                "font-weight:bold"
+            )
 
         if underline:
-            styles.append("text-decoration:underline")
+            styles.append(
+                "text-decoration:underline"
+            )
 
         if styles:
+
             return (
                 '<span style="'
                 + ";".join(styles)
@@ -91,30 +98,23 @@ def ansi_to_html(text):
 
     for match in ANSI_RE.finditer(text):
 
-        segment = text[pos:match.start()]
-        output.append(render_segment(segment))
+        segment = text[
+            pos:match.start()
+        ]
+
+        output.append(
+            render_segment(segment)
+        )
 
         codes = match.group(1)
-
-        # =====================================================
-        # RESET
-        # =====================================================
 
         if codes == "0" or codes == "":
             bold = False
             underline = False
             color = None
 
-        # =====================================================
-        # ORANGE
-        # =====================================================
-
         elif codes == "38;5;208":
             color = "#ff9500"
-
-        # =====================================================
-        # OTHER CODES
-        # =====================================================
 
         else:
 
@@ -152,9 +152,10 @@ def ansi_to_html(text):
 
         pos = match.end()
 
-    # Último segmento
     output.append(
-        render_segment(text[pos:])
+        render_segment(
+            text[pos:]
+        )
     )
 
     return "".join(output)
@@ -186,6 +187,7 @@ def is_running():
 def get_log_paths(mode):
 
     if mode == "live":
+
         return (
             LIVE_LOG_DIR,
             LIVE_LOG_DIR / "live.log",
@@ -198,112 +200,282 @@ def get_log_paths(mode):
 
 
 # =============================================================
-# ARCHIVE 
+# TRADES PATHS
 # =============================================================
 
-def archive_now_log(mode):
-    """
-    Antes de iniciar un nuevo RUN:
+def get_trade_paths(mode):
 
-    1. Coge lo que haya actualmente en NOW.
-    2. Lo añade al histórico del día.
-    3. Vacía NOW.
+    if mode == "live":
 
-    STOP NO llama a esta función.
-    """
+        return (
+            LIVE_TRADES_DIR,
+            LIVE_TRADES_DIR / "live_trades.log",
+        )
+
+    return (
+        PAPER_TRADES_DIR,
+        PAPER_TRADES_DIR / "paper_trades.log",
+    )
+
+
+# =============================================================
+# CREATE NOW FILES
+# =============================================================
+
+def ensure_now_files(mode):
 
     log_dir, now_file = get_log_paths(mode)
+    trades_dir, trades_file = get_trade_paths(mode)
 
     log_dir.mkdir(
         parents=True,
         exist_ok=True,
     )
 
-    # Si NOW todavía no existe, lo creamos vacío.
+    trades_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    # ---------------------------------------------------------
+    # IMPORTANTE:
+    #
+    # Al START se limpia el NOW.
+    #
+    # Esto permite que el RUN anterior permanezca visible
+    # mientras el bot está STOPPED.
+    # ---------------------------------------------------------
+
+    now_file.write_text(
+        "",
+        encoding="utf-8",
+    )
+
+    trades_file.write_text(
+        "",
+        encoding="utf-8",
+    )
+
+
+# =============================================================
+# READ CURRENT LOG
+# =============================================================
+
+def read_current_log(mode):
+
+    _, now_file = get_log_paths(mode)
+
     if not now_file.exists():
 
-        now_file.write_text(
-            "",
-            encoding="utf-8",
-        )
-
-        return
+        return ""
 
     try:
 
-        content = now_file.read_text(
+        return now_file.read_text(
             encoding="utf-8",
             errors="replace",
         )
 
     except Exception:
 
+        return ""
+
+
+# =============================================================
+# ARCHIVE CURRENT RUN
+# =============================================================
+
+def archive_now_log(mode):
+
+    """
+    Guarda el RUN actual en el histórico.
+
+    IMPORTANTE:
+
+    El archivo NOW NO se borra aquí.
+
+    Se mantiene para que la interfaz pueda seguir mostrando
+    el último RUN cuando el bot está STOPPED.
+
+    El NOW se limpia únicamente en el siguiente START.
+    """
+
+    log_dir, now_file = get_log_paths(mode)
+    trades_dir, trades_file = get_trade_paths(mode)
+
+    log_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    trades_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    # =========================================================
+    # LEER LOG
+    # =========================================================
+
+    if now_file.exists():
+
+        try:
+
+            content = now_file.read_text(
+                encoding="utf-8",
+                errors="replace",
+            )
+
+        except Exception:
+
+            content = ""
+
+    else:
+
         content = ""
 
-    # Si NOW está vacío, simplemente lo dejamos vacío.
-    if not content.strip():
+    # =========================================================
+    # LEER TRADES
+    # =========================================================
 
-        now_file.write_text(
-            "",
-            encoding="utf-8",
-        )
+    if trades_file.exists():
 
-        return
+        try:
 
-    # Día actual.
-    today = datetime.now().strftime(
+            trades_content = trades_file.read_text(
+                encoding="utf-8",
+                errors="replace",
+            )
+
+        except Exception:
+
+            trades_content = ""
+
+    else:
+
+        trades_content = ""
+
+    # =========================================================
+    # FECHA
+    # =========================================================
+
+    now = datetime.now()
+
+    today = now.strftime(
         "%Y-%m-%d"
     )
 
-    # Histórico correspondiente al día.
+    timestamp = now.strftime(
+        "%d/%m/%Y %H:%M:%S.%f"
+    )[:-3]
+    
+    
     if mode == "live":
 
-        historical_file = (
-            log_dir / f"live.log.{today}"
+        historical_log = (
+            log_dir
+            / f"live.log.{today}"
+        )
+
+        historical_trades = (
+            trades_dir
+            / f"live_trades.log.{today}"
         )
 
     else:
 
-        historical_file = (
-            log_dir / f"paper.log.{today}"
+        historical_log = (
+            log_dir
+            / f"paper.log.{today}"
         )
 
-    # Añadimos la sesión anterior al histórico.
-    with historical_file.open(
-        "a",
-        encoding="utf-8",
-    ) as f:
+        historical_trades = (
+            trades_dir
+            / f"paper_trades.log.{today}"
+        )
 
-        # Si ya había contenido ese día,
-        # añadimos un separador entre sesiones.
-        if historical_file.stat().st_size > 0:
+    # =========================================================
+    # ARCHIVAR LOG
+    # =========================================================
 
-            f.write("\n")
-            f.write("=" * 100)
-            f.write("\n")
-            f.write(
-                "NEW RUN - "
-                + datetime.now().strftime(
-                    "%Y-%m-%d %H:%M:%S"
+    if content.strip():
+
+        historical_log_exists = (
+            historical_log.exists()
+            and historical_log.stat().st_size > 0
+        )
+
+        with historical_log.open(
+            "a",
+            encoding="utf-8",
+        ) as f:
+
+            if historical_log_exists:
+
+                f.write("\n")
+
+            else:
+
+                f.write(
+                    timestamp + " | Running"
                 )
+                f.write("\n")
+
+            f.write(content)
+
+            if not content.endswith("\n"):
+
+                f.write("\n")
+
+    # =========================================================
+    # ARCHIVAR TRADES
+    # =========================================================
+
+    if trades_content.strip():
+
+        historical_trades_exists = (
+            historical_trades.exists()
+            and historical_trades.stat().st_size > 0
+        )
+
+        with historical_trades.open(
+            "a",
+            encoding="utf-8",
+        ) as f:
+
+            if historical_trades_exists:
+
+                f.write("\n")
+
+            else:
+
+                f.write(
+                    timestamp + " | Running"
+                )
+                f.write("\n")
+
+            f.write(
+                trades_content
             )
-            f.write("\n")
-            f.write("=" * 100)
-            f.write("\n")
 
-        f.write(content)
+            if not trades_content.endswith("\n"):
 
-        if not content.endswith("\n"):
-            f.write("\n")
+                f.write("\n")
 
     # =========================================================
-    # AHORA VACÍAMOS NOW
+    # NO VACIAR NOW
     # =========================================================
-
-    now_file.write_text(
-        "",
-        encoding="utf-8",
-    )
+    #
+    # DELIBERADAMENTE NO HACEMOS:
+    #
+    # now_file.write_text("", ...)
+    #
+    # ni:
+    #
+    # trades_file.write_text("", ...)
+    #
+    # El siguiente START será quien los limpie.
+    # =========================================================
 
 
 # =============================================================
@@ -316,9 +488,14 @@ def start_bot(mode):
     global bot_mode
 
     if is_running():
+
         return False
 
-    if mode not in ("paper", "live"):
+    if mode not in (
+        "paper",
+        "live",
+    ):
+
         return False
 
     script = (
@@ -334,17 +511,12 @@ def start_bot(mode):
         )
 
     # =========================================================
-    # ANTES DE CADA RUN
-    #
-    # Lo que había en NOW pasa al histórico del día.
-    # Después NOW queda vacío.
+    # LIMPIAR NOW AL COMENZAR UN NUEVO RUN
     # =========================================================
 
-    archive_now_log(mode)
-
-    # =========================================================
-    # ARRANCAR BOT
-    # =========================================================
+    ensure_now_files(
+        mode
+    )
 
     bot_process = subprocess.Popen(
         [
@@ -370,7 +542,10 @@ def stop_bot():
     global bot_mode
 
     if not is_running():
-        return False
+
+        return False, ""
+
+    stopped_mode = bot_mode
 
     try:
 
@@ -390,16 +565,37 @@ def stop_bot():
 
     finally:
 
-        # IMPORTANTE:
-        #
-        # STOP NO ARCHIVA NI BORRA NOW.
-        # El contenido permanece tal cual.
-        #
-
         bot_process = None
         bot_mode = None
 
-    return True
+    # =========================================================
+    # EL PROCESO YA HA TERMINADO
+    #
+    # Por tanto, el Trading Summary final ya debería estar
+    # escrito en NOW.
+    # =========================================================
+
+    final_log = read_current_log(
+        stopped_mode
+    )
+
+    # =========================================================
+    # ARCHIVAR
+    #
+    # IMPORTANTE:
+    # archive_now_log() YA NO VACÍA NOW.
+    # =========================================================
+
+    if stopped_mode in (
+        "paper",
+        "live",
+    ):
+
+        archive_now_log(
+            stopped_mode
+        )
+
+    return True, final_log
 
 
 # =============================================================
@@ -436,7 +632,7 @@ def status():
 
 
 # =============================================================
-# START
+# START API
 # =============================================================
 
 @app.post("/api/start")
@@ -476,18 +672,30 @@ def start():
 
 
 # =============================================================
-# STOP
+# STOP API
 # =============================================================
 
 @app.post("/api/stop")
 def stop():
 
-    stopped = stop_bot()
+    stopped, final_log = stop_bot()
+
+    if not stopped:
+
+        return jsonify(
+            {
+                "success": False,
+                "running": False,
+            }
+        )
 
     return jsonify(
         {
-            "success": stopped,
-            "running": is_running(),
+            "success": True,
+            "running": False,
+            "log": ansi_to_html(
+                final_log
+            ),
         }
     )
 
@@ -518,15 +726,20 @@ def current_log():
 
     try:
 
-        lines = log_file.read_text(
-            encoding="utf-8",
-            errors="replace",
-        ).splitlines()
+        lines = (
+            log_file
+            .read_text(
+                encoding="utf-8",
+                errors="replace",
+            )
+            .splitlines()
+        )
 
-        # Últimas 1000 líneas.
         lines = lines[-1000:]
 
-        content = "\n".join(lines)
+        content = "\n".join(
+            lines
+        )
 
         return jsonify(
             {
@@ -548,7 +761,7 @@ def current_log():
 
 
 # =============================================================
-# DAYS
+# HISTORY DAYS
 # =============================================================
 
 @app.get("/api/days")
@@ -576,32 +789,33 @@ def days():
 
     dates = []
 
-    for file in log_dir.glob(
-        prefix + "*"
-    ):
+    for file in log_dir.iterdir():
 
-        date = file.name.replace(
-            prefix,
-            "",
-        )
+        if not file.is_file():
 
-        # Solo aceptamos fechas reales
-        # con formato YYYY-MM-DD.
+            continue
+
+        if not file.name.startswith(
+            prefix
+        ):
+
+            continue
+
+        date = file.name[
+            len(prefix):
+        ]
+
         if re.fullmatch(
             r"\d{4}-\d{2}-\d{2}",
             date,
         ):
 
-            dates.append(date)
+            dates.append(
+                date
+            )
 
     dates.sort(
         reverse=True
-    )
-
-    # NOW siempre aparece primero.
-    dates.insert(
-        0,
-        "NOW",
     )
 
     return jsonify(
@@ -628,10 +842,6 @@ def history():
         "",
     )
 
-    # =========================================================
-    # SEGURIDAD
-    # =========================================================
-
     if (
         "/" in date
         or "\\" in date
@@ -644,54 +854,30 @@ def history():
             }
         ), 400
 
-    # =========================================================
-    # NOW
-    # =========================================================
+    if not re.fullmatch(
+        r"\d{4}-\d{2}-\d{2}",
+        date,
+    ):
 
-    if date == "NOW":
-
-        _, file = get_log_paths(
-            mode
+        return jsonify(
+            {
+                "log": ""
+            }
         )
 
-    # =========================================================
-    # HISTÓRICO
-    # =========================================================
+    if mode == "live":
+
+        file = (
+            LIVE_LOG_DIR
+            / f"live.log.{date}"
+        )
 
     else:
 
-        if not re.fullmatch(
-            r"\d{4}-\d{2}-\d{2}",
-            date,
-        ):
-
-            return jsonify(
-                {
-                    "log": "Fecha no válida"
-                }
-            ), 400
-
-        if mode == "live":
-
-            log_dir = LIVE_LOG_DIR
-
-            file = (
-                log_dir
-                / f"live.log.{date}"
-            )
-
-        else:
-
-            log_dir = PAPER_LOG_DIR
-
-            file = (
-                log_dir
-                / f"paper.log.{date}"
-            )
-
-    # =========================================================
-    # FILE NOT FOUND
-    # =========================================================
+        file = (
+            PAPER_LOG_DIR
+            / f"paper.log.{date}"
+        )
 
     if not file.exists():
 
@@ -700,10 +886,6 @@ def history():
                 "log": ""
             }
         )
-
-    # =========================================================
-    # READ
-    # =========================================================
 
     try:
 
@@ -726,6 +908,159 @@ def history():
             {
                 "log": html.escape(
                     f"Error leyendo log: {exc}"
+                )
+            }
+        )
+
+
+# =============================================================
+# TRADE DAYS
+# =============================================================
+
+@app.get("/api/trade-days")
+def trade_days():
+
+    mode = request.args.get(
+        "mode",
+        "paper",
+    )
+
+    trades_dir, _ = get_trade_paths(
+        mode
+    )
+
+    trades_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    prefix = (
+        "live_trades.log."
+        if mode == "live"
+        else "paper_trades.log."
+    )
+
+    dates = []
+
+    for file in trades_dir.iterdir():
+
+        if not file.is_file():
+
+            continue
+
+        if not file.name.startswith(
+            prefix
+        ):
+
+            continue
+
+        date = file.name[
+            len(prefix):
+        ]
+
+        if re.fullmatch(
+            r"\d{4}-\d{2}-\d{2}",
+            date,
+        ):
+
+            dates.append(
+                date
+            )
+
+    dates.sort(
+        reverse=True
+    )
+
+    return jsonify(
+        {
+            "days": dates
+        }
+    )
+
+
+# =============================================================
+# TRADES
+# =============================================================
+
+@app.get("/api/trades")
+def trades():
+
+    mode = request.args.get(
+        "mode",
+        "paper",
+    )
+
+    date = request.args.get(
+        "date",
+        "",
+    )
+
+    if (
+        "/" in date
+        or "\\" in date
+        or ".." in date
+    ):
+
+        return jsonify(
+            {
+                "log": "Fecha no válida"
+            }
+        ), 400
+
+    if not re.fullmatch(
+        r"\d{4}-\d{2}-\d{2}",
+        date,
+    ):
+
+        return jsonify(
+            {
+                "log": ""
+            }
+        )
+
+    if mode == "live":
+
+        file = (
+            LIVE_TRADES_DIR
+            / f"live_trades.log.{date}"
+        )
+
+    else:
+
+        file = (
+            PAPER_TRADES_DIR
+            / f"paper_trades.log.{date}"
+        )
+
+    if not file.exists():
+
+        return jsonify(
+            {
+                "log": ""
+            }
+        )
+
+    try:
+
+        content = file.read_text(
+            encoding="utf-8",
+            errors="replace",
+        )
+
+        return jsonify(
+            {
+                "log": ansi_to_html(
+                    content
+                )
+            }
+        )
+
+    except Exception as exc:
+
+        return jsonify(
+            {
+                "log": html.escape(
+                    f"Error leyendo trades: {exc}"
                 )
             }
         )

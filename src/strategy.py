@@ -240,14 +240,6 @@ class Strategy:
         self.hedge_token = None
         self.hedge_price = None
 
-        log.info(
-            BOLD
-            + "ROUND %s | BTC: $%.2f"
-            + RESET,
-            round_id,
-            price,
-        )
-
     # =============================================================
     # STRATEGY
     # =============================================================

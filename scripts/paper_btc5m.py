@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import os
+import re
 import sys
 import time
 
@@ -31,11 +32,49 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+
+# =============================================================
+# LOGS NORMALES
+# =============================================================
+
 LOG_DIR = ROOT / "logs" / "paper"
-LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+LOG_DIR.mkdir(
+    parents=True,
+    exist_ok=True,
+)
 
 LOG_FILE = LOG_DIR / "paper.log"
 
+
+# =============================================================
+# TRADES
+# =============================================================
+
+TRADES_DIR = ROOT / "trades" / "paper"
+
+TRADES_DIR.mkdir(
+    parents=True,
+    exist_ok=True,
+)
+
+TRADES_FILE = TRADES_DIR / "paper_trades.log"
+
+
+# =============================================================
+# FORMATTER
+# =============================================================
+
+formatter = logging.Formatter(
+    "%(asctime)s | %(message)s"
+)
+
+
+# =============================================================
+# HANDLER LOG NORMAL
+#
+# Guarda TODOS los logs.
+# =============================================================
 
 file_handler = TimedRotatingFileHandler(
     filename=LOG_FILE,
@@ -47,27 +86,95 @@ file_handler = TimedRotatingFileHandler(
 
 file_handler.suffix = "%Y-%m-%d"
 
-
-console_handler = logging.StreamHandler()
-
-
-formatter = logging.Formatter(
-    "%(asctime)s | %(message)s"
+file_handler.setFormatter(
+    formatter
 )
 
 
-file_handler.setFormatter(formatter)
-console_handler.setFormatter(formatter)
+# =============================================================
+# HANDLER TRADES
+#
+# Solo guarda:
+# - ROUND
+# - Entry
+# - Hedge
+# - Exit
+# =============================================================
 
+class TradeFilter(logging.Filter):
+
+    def filter(self, record):
+
+        message = record.getMessage()
+
+        # Eliminamos ANSI antes de buscar las palabras.
+        message_clean = re.sub(
+            r"\x1b\[[0-9;]*m",
+            "",
+            message,
+        )
+
+        return (
+            "ROUND" in message_clean
+            or "(Paper) Entry" in message_clean
+            or "(Paper) Hedge" in message_clean
+            or "(Paper) Exit" in message_clean
+        )
+
+
+trade_handler = TimedRotatingFileHandler(
+    filename=TRADES_FILE,
+    when="midnight",
+    interval=1,
+    backupCount=90,
+    encoding="utf-8",
+)
+
+trade_handler.suffix = "%Y-%m-%d"
+
+trade_handler.setFormatter(
+    formatter
+)
+
+trade_handler.addFilter(
+    TradeFilter()
+)
+
+
+# =============================================================
+# CONSOLA
+# =============================================================
+
+console_handler = logging.StreamHandler()
+
+console_handler.setFormatter(
+    formatter
+)
+
+
+# =============================================================
+# ROOT LOGGER
+# =============================================================
 
 logger = logging.getLogger()
 
-logger.setLevel(logging.INFO)
+logger.setLevel(
+    logging.INFO
+)
 
 logger.handlers.clear()
 
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
+logger.addHandler(
+    file_handler
+)
+
+logger.addHandler(
+    trade_handler
+)
+
+logger.addHandler(
+    console_handler
+)
 
 
 # =============================================================
@@ -80,6 +187,7 @@ GREEN = "\033[32m"
 RED = "\033[31m"
 RESET = "\033[0m"
 BOLD = "\033[1m"
+ITALIC = "\033[3m"
 UNDERLINE = "\033[4m"
 
 
@@ -111,27 +219,35 @@ async def main():
     total_pnl = 0.00
 
     logging.info("")
+
     logging.info(
         "██████╗   ██████╗ ████████╗    ████████╗██████╗  █████╗ ██████╗ ██╗███╗   ██╗ ██████╗"
     )
+
     logging.info(
         "██╔══██╗ ██╔═══██╗╚══██╔══╝    ╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗██║████╗  ██║██╔════╝"
     )
+
     logging.info(
         "██████╔╝ ██║   ██║   ██║          ██║   ██████╔╝███████║██║  ██║██║██╔██╗ ██║██║  ███╗"
     )
+
     logging.info(
         "██╔══██╗ ██║   ██║   ██║          ██║   ██╔══██╗██╔══██║██║  ██║██║██║╚██╗██║██║   ██║"
     )
+
     logging.info(
         "██████╔╝ ╚██████╔╝   ██║          ██║   ██║  ██║██║  ██║██████╔╝██║██║ ╚████║╚██████╔╝"
     )
+
     logging.info(
         "╚═════╝   ╚═════╝    ╚═╝          ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝"
     )
+
     logging.info(
         "                         by   Arkilinux"
     )
+
     logging.info("")
 
     logging.warning(
@@ -203,6 +319,12 @@ async def main():
     last_log = 0
 
     # =========================================================
+    # ROUND TRACKING
+    # =========================================================
+
+    last_round_logged = None
+
+    # =========================================================
     # PAPER LOOP
     # =========================================================
 
@@ -241,6 +363,24 @@ async def main():
             )
 
             # =====================================================
+            # NUEVA RONDA
+            # =====================================================
+
+            if current_round_id != last_round_logged:
+
+                logging.info(
+                    BOLD
+                    + "New 5m round %s started | BTC: $%.2f"
+                    + RESET,
+                    current_round_id,
+                    feed.state.price,
+                )
+
+                last_round_logged = (
+                    current_round_id
+                )
+
+            # =====================================================
             # SI LA RONDA YA FUE CERRADA:
             #
             # NO TOCAR POLYMARKET.
@@ -260,7 +400,7 @@ async def main():
                         "%.0fs | "
                         "BTC: $%+.2f | "
                         "Action: WAIT next round",
-                        
+
                         remaining,
 
                         feed.state.price
@@ -312,27 +452,34 @@ async def main():
                 )
 
                 # =================================================
-                # =================================================
                 # NORMAL LOG
                 # =================================================
 
                 if now - last_log >= 2:
 
-                    log_price = decision.contract_price
+                    log_price = (
+                        decision.contract_price
+                    )
 
                     if strategy.entered:
 
-                        token_for_log = strategy.position_token
+                        token_for_log = (
+                            strategy.position_token
+                        )
 
                         try:
 
-                            log_price = poly.midpoint(
-                                token_for_log
+                            log_price = (
+                                poly.midpoint(
+                                    token_for_log
+                                )
                             )
 
                         except Exception:
 
-                            log_price = decision.contract_price
+                            log_price = (
+                                decision.contract_price
+                            )
 
                     logging.info(
                         "%.0fs | "
@@ -359,7 +506,6 @@ async def main():
                             if strategy.entered
                             else decision.direction
                         ),
-
                     )
 
                     last_log = now
@@ -415,7 +561,6 @@ async def main():
                         logging.info(
                             ORANGE
                             + BOLD
-                            + UNDERLINE
                             + "(Paper) Entry %s $%+.2f | "
                             "Range: %.2f | "
                             "Stake: $%.2f | "
@@ -468,8 +613,6 @@ async def main():
 
                     # -------------------------------------------------
                     # Si no hay precio, no intentamos hedge.
-                    # Pero sí dejamos que el EXIT de seguridad
-                    # se gestione en el siguiente ciclo.
                     # -------------------------------------------------
 
                     if current_price is not None:
@@ -505,30 +648,34 @@ async def main():
                                     _,
                                 ) = exit_result
 
-                                total_pnl += result_usd
-                                paper_balance += result_usd
+                                total_pnl += (
+                                    result_usd
+                                )
+
+                                paper_balance += (
+                                    result_usd
+                                )
 
                                 if result == "WIN":
+
                                     wins += 1
+
                                 else:
+
                                     losses += 1
 
                                 exit_color = (
                                     GREEN
                                     + BOLD
-                                    + UNDERLINE
                                     if result_usd >= 0
                                     else RED
                                     + BOLD
-                                    + UNDERLINE
                                 )
 
                                 logging.info(
                                     exit_color
-                                    + "(Paper) Exit %s $%+.2f | "
-                                    "Price: %.2f | "
-                                    "Shares: %.2f | "
-                                    "P&L: %s %+.2f USD | "
+                                    + "(Paper) Exit %s $%+.2f (%.2f shares) | "
+                                    "P&L: %s $%+.2f | "
                                     "Balance: $%.2f | "
                                     "Reason: contract >= 0.99"
                                     + RESET,
@@ -537,8 +684,6 @@ async def main():
                                     or "-",
 
                                     decision.move,
-
-                                    current_price,
 
                                     exit_shares,
 
@@ -597,7 +742,6 @@ async def main():
                                 logging.info(
                                     BLUE
                                     + BOLD
-                                    + UNDERLINE
                                     + "(Paper) Hedge %s | "
                                     "Main price: %.2f | "
                                     "Opposite: %s | "
@@ -683,32 +827,34 @@ async def main():
                                 _,
                             ) = exit_result
 
-                            total_pnl += result_usd
-                            paper_balance += result_usd
+                            total_pnl += (
+                                result_usd
+                            )
+
+                            paper_balance += (
+                                result_usd
+                            )
 
                             if result == "WIN":
+
                                 wins += 1
+
                             else:
+
                                 losses += 1
 
                             exit_color = (
                                 GREEN
                                 + BOLD
-                                + UNDERLINE
                                 if result_usd >= 0
                                 else RED
                                 + BOLD
-                                + UNDERLINE
                             )
 
                             logging.info(
                                 exit_color
-                                + "(Paper) Exit %s | "
-                                "Round: %s | "
-                                "Move: %+.2f | "
-                                "Price: %.2f | "
-                                "Shares: %.2f | "
-                                "P&L: %s %+.2f USD | "
+                                + "(Paper) Exit %s $%+.2f (%.2f shares) |"
+                                "P&L: %s $%+.2f | "
                                 "Balance: $%.2f | "
                                 "Reason: %s"
                                 + RESET,
@@ -716,11 +862,7 @@ async def main():
                                 exit_direction
                                 or "-",
 
-                                strategy.round_id,
-
                                 decision.move,
-
-                                final_price,
 
                                 exit_shares,
 
@@ -749,16 +891,23 @@ async def main():
         feed.stop()
 
         if not feed_task.done():
+
             feed_task.cancel()
 
         try:
+
             await feed_task
+
         except asyncio.CancelledError:
+
             pass
+
+        logging.info("")
 
         logging.info(
             BOLD
-            + "\n================ PAPER TRADING SUMMARY ================"
+            + UNDERLINE
+            + "PAPER TRADING SUMMARY"
             + RESET
         )
 
@@ -791,7 +940,13 @@ async def main():
             "P&L: %+.2f USD",
             total_pnl,
         )
-
+        
+        logging.info("")
+        logging.info(
+            ITALIC 
+            + "Logs saved!" 
+            + RESET
+        )
 
 if __name__ == "__main__":
 

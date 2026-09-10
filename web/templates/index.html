@@ -274,6 +274,15 @@ h1 {
 /* STATUS */
 /* ========================================================= */
 
+.status-area {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+}
+
 .status {
 
     font-weight: bold;
@@ -299,7 +308,7 @@ h1 {
 
     display: none;
 
-    margin-top: 8px;
+    margin-top: 0;
 }
 
 
@@ -367,9 +376,9 @@ button:disabled {
 }
 
 .panel-header {
-    
+
     position: relative;
-    
+
     display: flex;
 
     justify-content: center;
@@ -381,7 +390,7 @@ button:disabled {
 
 
 /* ========================================================= */
-/* NOW + FECHAS */
+/* NAVEGACIÓN */
 /* ========================================================= */
 
 .log-navigation {
@@ -389,6 +398,8 @@ button:disabled {
     display: flex;
 
     align-items: center;
+
+    justify-content: center;
 
     gap: 8px;
 }
@@ -431,10 +442,10 @@ button:disabled {
 
 
 /* ========================================================= */
-/* SELECT FECHAS */
+/* SELECT HISTORY / TRADES */
 /* ========================================================= */
 
-#day {
+.log-select {
 
     background: #222;
 
@@ -449,23 +460,35 @@ button:disabled {
     font-size: 15px;
 
     font-family: Cambria, Georgia, serif;
+
+    cursor: pointer;
 }
 
-#day.history-placeholder {
+.log-select.placeholder {
 
     color: #666;
 }
 
-#day option {
+.log-select option {
 
     background: #222;
 
     color: white;
 }
 
-#day option.history-option {
+.log-select option.placeholder-option {
 
     color: #666;
+}
+
+
+/* ========================================================= */
+/* CONTENEDOR LOGS */
+/* ========================================================= */
+
+.logs-container {
+
+    position: relative;
 }
 
 
@@ -485,6 +508,10 @@ button:disabled {
 
     overflow-y: auto;
 
+    scrollbar-gutter: stable;
+
+    scroll-behavior: auto !important;
+
     white-space: pre-wrap;
 
     font-family: "Courier New", monospace;
@@ -492,6 +519,50 @@ button:disabled {
     font-size: 13px;
 
     line-height: 1.45;
+}
+
+
+/* ========================================================= */
+/* SAVE LOGS */
+/* ========================================================= */
+
+#saveLogs {
+
+    position: absolute;
+
+    top: 8px;
+
+    right: 8px;
+
+    padding: 5px 12px;
+
+    background: #292929;
+
+    color: #ffffff;
+
+    border: 1px solid #444;
+
+    border-radius: 6px;
+
+    font-family: Cambria, Georgia, serif;
+
+    font-size: 12px;
+
+    cursor: pointer;
+
+    z-index: 2;
+}
+
+#saveLogs:hover {
+
+    background: #3a3a3a;
+}
+
+#saveLogs:disabled {
+
+    opacity: 0.35;
+
+    cursor: not-allowed;
 }
 
 
@@ -538,13 +609,12 @@ button:disabled {
 <h1>Bot trading - BTC 5m Strategy - Polymarket</h1>
 
 <div class="subtitle">
-By Arkilinux
+by Arkilinux
 </div>
 
+
 <!-- ===================================================== -->
-
 <!-- CONTROL -->
-
 <!-- ===================================================== -->
 
 <div class="top">
@@ -553,21 +623,18 @@ By Arkilinux
 
 <div class="mode-area">
 
+
 <!-- ================================================= -->
-
 <!-- PAPER / LIVE SWITCH -->
-
 <!-- ================================================= -->
 
 <div
     class="mode-switch paper-selected"
     id="modeSwitch">
 
-
 <div class="mode-label paper-label">
     PAPER
 </div>
-
 
 <button
     id="modeToggle"
@@ -579,19 +646,18 @@ By Arkilinux
 
 </button>
 
-
 <div class="mode-label live-label">
     LIVE
 </div>
 
-
 </div>
 
-<!-- ================================================= -->
 
+<!-- ================================================= -->
 <!-- STATUS -->
-
 <!-- ================================================= -->
+
+<div class="status-area">
 
 <div
     id="status"
@@ -601,13 +667,15 @@ By Arkilinux
 
 </div>
 
-</div>
-
 <div
     id="liveWarning"
     class="live-warning">
 
-⚠️ OPERACIONES REALES ⚠️ OPERACIONES REALES ⚠️
+⚠️
+
+</div>
+
+</div>
 
 </div>
 
@@ -616,19 +684,19 @@ By Arkilinux
 <div class="buttons">
 
 <button
- id="startButton"
- class="start"
- onclick="startBot()">
+    id="startButton"
+    class="start"
+    onclick="startBot()">
 
 ▶ START
 
 </button>
 
 <button
- id="stopButton"
- class="stop"
- onclick="stopBot()"
- disabled>
+    id="stopButton"
+    class="stop"
+    onclick="stopBot()"
+    disabled>
 
 ■ STOP
 
@@ -638,10 +706,9 @@ By Arkilinux
 
 </div>
 
+
 <!-- ===================================================== -->
-
 <!-- LOGS -->
-
 <!-- ===================================================== -->
 
 <div class="panel">
@@ -650,32 +717,96 @@ By Arkilinux
 
 <div class="log-navigation">
 
-<button
- id="nowButton"
- class="active"
- onclick="showNow()">
 
+<!-- ================================================= -->
+<!-- NOW -->
+<!-- ================================================= -->
+
+<button
+    id="nowButton"
+    class="active"
+    onclick="showNow()">
 
 Now
 
-
 </button>
 
+
+<!-- ================================================= -->
+<!-- HISTORY -->
+<!-- ================================================= -->
+
 <select
- id="day"
- onchange="loadHistory()"> </select>
+    id="day"
+    class="log-select placeholder"
+    onchange="loadHistory()">
+
+<option
+    value=""
+    class="placeholder-option">
+
+History
+
+</option>
+
+</select>
+
+
+<!-- ================================================= -->
+<!-- TRADES -->
+<!-- ================================================= -->
+
+<select
+    id="tradeDay"
+    class="log-select placeholder"
+    onchange="loadTrades()">
+
+<option
+    value=""
+    class="placeholder-option">
+
+Trades
+
+</option>
+
+</select>
+
 
 </div>
 
 </div>
+
+
+<div class="logs-container">
 
 <pre id="logs">
 Cargando...
 </pre>
 
+
+<!-- ================================================= -->
+<!-- SAVE LOGS -->
+<!-- ================================================= -->
+
 <button
- id="goBottom"
- onclick="goToBottom()">
+    id="saveLogs"
+    onclick="saveLogs()"
+    disabled>
+
+Save logs
+
+</button>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- GO TO BOTTOM -->
+<!-- ================================================= -->
+
+<button
+    id="goBottom"
+    onclick="goToBottom()">
 
 ↓ Go to the bottom ↓
 
@@ -684,6 +815,7 @@ Cargando...
 </div>
 
 </div>
+
 
 <script>
 
@@ -697,6 +829,31 @@ let currentMode = "paper";
 let currentView = "now";
 
 
+// ============================================================
+// ÚLTIMO NOW MOSTRADO
+// ============================================================
+
+let lastNowLog = "";
+
+
+// ============================================================
+// AUTOSCROLL
+// ============================================================
+
+let autoScrollNow = true;
+
+
+// ============================================================
+// ESTADO DEL SAVE LOGS
+// ============================================================
+
+let nowSaved = false;
+
+
+// ============================================================
+// GET MODE
+// ============================================================
+
 function getMode() {
 
     return currentMode;
@@ -704,14 +861,100 @@ function getMode() {
 }
 
 
-function toggleMode() {
+// ============================================================
+// ACTUALIZAR ESTADO DEL BOTÓN SAVE LOGS
+// ============================================================
 
-    // No permitir cambiar mientras el bot está ejecutándose
+function updateSaveLogsButton() {
+
+    const button =
+        document.getElementById(
+            "saveLogs"
+        );
+
+
+    // ========================================================
+    // SAVE LOGS SOLO EXISTE VISUALMENTE EN NOW
+    // ========================================================
+
+    if (currentView !== "now") {
+
+        button.style.display =
+            "none";
+
+        return;
+
+    }
+
+
+    button.style.display =
+        "block";
+
 
     const status =
-        document.getElementById("status");
+        document.getElementById(
+            "status"
+        );
 
-    if (status.classList.contains("running")) {
+
+    // ========================================================
+    // RUNNING = DESHABILITADO
+    // ========================================================
+
+    if (
+        status.classList.contains(
+            "running"
+        )
+    ) {
+
+        button.disabled =
+            true;
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // SI YA SE GUARDÓ = DESHABILITADO
+    // ========================================================
+
+    if (nowSaved) {
+
+        button.disabled =
+            true;
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // STOPPED + NOW PENDIENTE = HABILITADO
+    // ========================================================
+
+    button.disabled =
+        false;
+
+}
+
+
+// ============================================================
+// TOGGLE MODE
+// ============================================================
+
+function toggleMode() {
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+    if (
+        status.classList.contains(
+            "running"
+        )
+    ) {
 
         return;
 
@@ -729,14 +972,27 @@ function toggleMode() {
     }
 
 
+    lastNowLog = "";
+
+    autoScrollNow = true;
+
+    nowSaved = false;
+
+
     updateModeUI();
 
     loadDays();
+
+    loadTradeDays();
 
     showNow();
 
 }
 
+
+// ============================================================
+// MODE UI
+// ============================================================
 
 function updateModeUI() {
 
@@ -861,8 +1117,6 @@ async function updateStatus() {
             true;
 
 
-        // Sincronizar modo con el bot
-
         currentMode =
             data.mode;
 
@@ -888,6 +1142,9 @@ async function updateStatus() {
 
     }
 
+
+    updateSaveLogsButton();
+
 }
 
 
@@ -900,10 +1157,6 @@ async function startBot() {
     const mode =
         getMode();
 
-
-    // ========================================================
-    // LIVE CONFIRMATION
-    // ========================================================
 
     if (mode === "live") {
 
@@ -925,6 +1178,36 @@ async function startBot() {
         }
 
     }
+
+
+    // ========================================================
+    // NUEVO RUN
+    // ========================================================
+
+    lastNowLog = "";
+
+    autoScrollNow = true;
+
+    nowSaved = false;
+
+
+    const saveLogsButton =
+        document.getElementById(
+            "saveLogs"
+        );
+
+
+    saveLogsButton.disabled =
+        true;
+
+
+    const logs =
+        document.getElementById(
+            "logs"
+        );
+
+    logs.innerHTML =
+        "";
 
 
     const response =
@@ -967,6 +1250,9 @@ async function startBot() {
 
     loadDays();
 
+    loadTradeDays();
+
+
     setTimeout(
         showNow,
         1000
@@ -1000,10 +1286,310 @@ async function stopBot() {
             "El bot no estaba ejecutándose."
         );
 
+        return;
+
     }
 
 
-    updateStatus();
+    // ========================================================
+    // EL BACKEND DEVUELVE EL RUN FINAL COMPLETO
+    // ========================================================
+
+    currentView =
+        "now";
+
+
+    const nowButton =
+        document.getElementById(
+            "nowButton"
+        );
+
+    nowButton.classList.add(
+        "active"
+    );
+
+
+    const day =
+        document.getElementById(
+            "day"
+        );
+
+    const tradeDay =
+        document.getElementById(
+            "tradeDay"
+        );
+
+
+    day.value =
+        "";
+
+    tradeDay.value =
+        "";
+
+
+    day.classList.add(
+        "placeholder"
+    );
+
+    tradeDay.classList.add(
+        "placeholder"
+    );
+
+
+    // ========================================================
+    // GUARDAR EL LOG FINAL
+    // ========================================================
+
+    lastNowLog =
+        data.log || "";
+
+
+    // ========================================================
+    // NUEVO LOG DISPONIBLE PARA GUARDAR
+    // ========================================================
+
+    nowSaved =
+        false;
+
+
+    const logs =
+        document.getElementById(
+            "logs"
+        );
+
+
+    logs.innerHTML =
+        lastNowLog;
+
+
+    autoScrollNow =
+        true;
+
+
+    logs.scrollTop =
+        logs.scrollHeight;
+
+
+    await loadDays();
+
+    await loadTradeDays();
+
+    await updateStatus();
+
+}
+
+
+// ============================================================
+// SAVE LOGS
+// ============================================================
+
+async function saveLogs() {
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+
+    // ========================================================
+    // SOLO NOW
+    // ========================================================
+
+    if (currentView !== "now") {
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // SOLO STOPPED
+    // ========================================================
+
+    if (
+        status.classList.contains(
+            "running"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // EVITAR GUARDAR DOS VECES
+    // ========================================================
+
+    if (nowSaved) {
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // IMPORTANTE:
+    // MARCAR COMO GUARDADO INMEDIATAMENTE
+    //
+    // Así el botón NO vuelve a habilitarse durante
+    // las actualizaciones de estado ni mientras se
+    // ejecuta la petición.
+    //
+    // Solo START vuelve a poner nowSaved = false.
+    // ========================================================
+
+    nowSaved =
+        true;
+
+
+    const saveButton =
+        document.getElementById(
+            "saveLogs"
+        );
+
+
+    const logs =
+        document.getElementById(
+            "logs"
+        );
+
+
+    saveButton.disabled =
+        true;
+
+
+    const response =
+        await fetch(
+            "/api/save-now",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify(
+                    {
+                        mode: getMode()
+                    }
+                )
+            }
+        );
+
+
+    const data =
+        await response.json();
+
+
+    if (!data.success) {
+
+        alert(
+            data.error
+            || "No se pudieron guardar los logs."
+        );
+
+
+        // ====================================================
+        // SOLO EN CASO DE ERROR REAL
+        // PERMITIMOS REINTENTAR
+        // ====================================================
+
+        nowSaved =
+            false;
+
+        updateSaveLogsButton();
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // BORRAR NOW
+    // ========================================================
+
+    lastNowLog =
+        "";
+
+    logs.innerHTML =
+        "";
+
+
+    autoScrollNow =
+        true;
+
+
+    logs.scrollTop =
+        0;
+
+
+    // ========================================================
+    // ACTUALIZAR HISTORY / TRADES
+    // ========================================================
+
+    await loadDays();
+
+    await loadTradeDays();
+
+
+    // ========================================================
+    // ASEGURAR NOW
+    // ========================================================
+
+    currentView =
+        "now";
+
+
+    document
+        .getElementById(
+            "nowButton"
+        )
+        .classList.add(
+            "active"
+        );
+
+
+    document
+        .getElementById(
+            "day"
+        )
+        .value = "";
+
+    document
+        .getElementById(
+            "tradeDay"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "day"
+        )
+        .classList.add(
+            "placeholder"
+        );
+
+    document
+        .getElementById(
+            "tradeDay"
+        )
+        .classList.add(
+            "placeholder"
+        );
+
+
+    // ========================================================
+    // PERMANECE DESHABILITADO
+    //
+    // No se pone nowSaved = false aquí.
+    // Solo START lo reseteará.
+    // ========================================================
+
+    saveButton.disabled =
+        true;
 
 }
 
@@ -1014,7 +1600,8 @@ async function stopBot() {
 
 async function showNow() {
 
-    currentView = "now";
+    currentView =
+        "now";
 
 
     const nowButton =
@@ -1022,26 +1609,71 @@ async function showNow() {
             "nowButton"
         );
 
-
     nowButton.classList.add(
         "active"
     );
 
-    // Al mostrar NOW, el selector conserva
-    // su opción fija "History" como referencia.
-    const select =
+
+    const day =
         document.getElementById(
             "day"
         );
 
-    select.value = "";
+    const tradeDay =
+        document.getElementById(
+            "tradeDay"
+        );
 
-    select.classList.add(
-        "history-placeholder"
+
+    day.value = "";
+
+    tradeDay.value = "";
+
+
+    day.classList.add(
+        "placeholder"
+    );
+
+    tradeDay.classList.add(
+        "placeholder"
     );
 
 
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+
+    if (
+        !status.classList.contains(
+            "running"
+        )
+        &&
+        lastNowLog
+    ) {
+
+        const logs =
+            document.getElementById(
+                "logs"
+            );
+
+        logs.innerHTML =
+            lastNowLog;
+
+        logs.scrollTop =
+            logs.scrollHeight;
+
+        updateSaveLogsButton();
+
+        return;
+
+    }
+
+
     await loadCurrentLog();
+
+    updateSaveLogsButton();
 
 }
 
@@ -1062,8 +1694,15 @@ async function loadCurrentLog() {
         );
 
 
-    // Guardar posición actual para no mandar
-    // al usuario al final cada vez que se actualizan logs.
+    const distanceFromBottom =
+        logs.scrollHeight
+        - logs.scrollTop
+        - logs.clientHeight;
+
+
+    const wasAtBottom =
+        distanceFromBottom <= 30;
+
 
     const previousScrollTop =
         logs.scrollTop;
@@ -1080,22 +1719,74 @@ async function loadCurrentLog() {
         await response.json();
 
 
-    // IMPORTANTE:
-    // innerHTML permite mostrar los colores
-    // convertidos por app.py.
+    if (currentView === "now") {
+
+        lastNowLog =
+            data.log;
+
+    }
+
 
     logs.innerHTML =
         data.log;
 
 
-    logs.scrollTop =
-        previousScrollTop;
+    if (
+        wasAtBottom
+        ||
+        autoScrollNow
+    ) {
+
+        logs.scrollTop =
+            logs.scrollHeight;
+
+    } else {
+
+        logs.scrollTop =
+            previousScrollTop;
+
+    }
 
 }
 
 
 // ============================================================
-// DAYS
+// DETECTAR SCROLL MANUAL DEL USUARIO
+// ============================================================
+
+document
+    .getElementById("logs")
+    .addEventListener(
+        "scroll",
+        function() {
+
+            const logs = this;
+
+
+            const distanceFromBottom =
+                logs.scrollHeight
+                - logs.scrollTop
+                - logs.clientHeight;
+
+
+            if (
+                distanceFromBottom <= 30
+            ) {
+
+                autoScrollNow = true;
+
+            } else {
+
+                autoScrollNow = false;
+
+            }
+
+        }
+    );
+
+
+// ============================================================
+// DAYS - HISTORY
 // ============================================================
 
 async function loadDays() {
@@ -1124,12 +1815,12 @@ async function loadDays() {
     select.innerHTML =
         "";
 
-    // Opción fija para identificar el selector de HISTORY.
-    // Se mantiene arriba y aparece en gris cuando está seleccionada.
+
     const historyOption =
         document.createElement(
             "option"
         );
+
 
     historyOption.value =
         "";
@@ -1138,18 +1829,21 @@ async function loadDays() {
         "History";
 
     historyOption.className =
-        "history-option";
+        "placeholder-option";
+
 
     select.appendChild(
         historyOption
     );
 
+
     select.classList.add(
-        "history-placeholder"
+        "placeholder"
     );
 
 
     const months = [
+
         "Enero",
         "Febrero",
         "Marzo",
@@ -1162,50 +1856,51 @@ async function loadDays() {
         "Octubre",
         "Noviembre",
         "Diciembre"
+
     ];
 
 
-    data.days.forEach(date => {
+    data.days.forEach(
+        date => {
 
-        // NOW ya no se añade al selector.
-        if (date === "NOW") {
+            if (date === "NOW") {
 
-            return;
+                return;
 
-        }
+            }
 
 
-        const option =
-            document.createElement(
-                "option"
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                date;
+
+
+            const [
+                year,
+                month,
+                day
+            ] = date.split("-");
+
+
+            option.textContent =
+                `${day} ${months[parseInt(month, 10) - 1]} ${year.slice(2)}`;
+
+
+            select.appendChild(
+                option
             );
 
-
-        // El value INTERNO no cambia.
-
-        option.value =
-            date;
+        }
+    );
 
 
-        const [
-            year,
-            month,
-            day
-        ] = date.split("-");
-
-
-        option.textContent =
-            `${day} ${months[parseInt(month, 10) - 1]} ${year.slice(2)}`;
-
-
-        select.appendChild(
-            option
-        );
-
-    });
-
-    // HISTORY queda seleccionado por defecto.
-    select.value = "";
+    select.value =
+        "";
 
 }
 
@@ -1226,13 +1921,9 @@ async function loadHistory() {
         select.value;
 
 
-    // La opción fija "History" no carga ningún log.
-    // Solo sirve como etiqueta cuando no se ha seleccionado una fecha.
     if (!date) {
 
-        select.classList.add(
-            "history-placeholder"
-        );
+        showNow();
 
         return;
 
@@ -1240,22 +1931,40 @@ async function loadHistory() {
 
 
     select.classList.remove(
-        "history-placeholder"
+        "placeholder"
     );
 
 
-    currentView = "history";
+    currentView =
+        "history";
 
 
-    const nowButton =
-        document.getElementById(
+    updateSaveLogsButton();
+
+
+    document
+        .getElementById(
             "nowButton"
+        )
+        .classList.remove(
+            "active"
         );
 
 
-    nowButton.classList.remove(
-        "active"
-    );
+    document
+        .getElementById(
+            "tradeDay"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "tradeDay"
+        )
+        .classList.add(
+            "placeholder"
+        );
 
 
     const mode =
@@ -1265,6 +1974,223 @@ async function loadHistory() {
     const response =
         await fetch(
             "/api/history?mode="
+            + mode
+            + "&date="
+            + encodeURIComponent(
+                date
+            )
+        );
+
+
+    const data =
+        await response.json();
+
+
+    const logs =
+        document.getElementById(
+            "logs"
+        );
+
+
+    logs.innerHTML =
+        data.log;
+
+
+    logs.scrollTop =
+        0;
+
+}
+
+
+// ============================================================
+// TRADE DAYS
+// ============================================================
+
+async function loadTradeDays() {
+
+    const mode =
+        getMode();
+
+
+    const response =
+        await fetch(
+            "/api/trade-days?mode="
+            + mode
+        );
+
+
+    const data =
+        await response.json();
+
+
+    const select =
+        document.getElementById(
+            "tradeDay"
+        );
+
+
+    select.innerHTML =
+        "";
+
+
+    const tradesOption =
+        document.createElement(
+            "option"
+        );
+
+
+    tradesOption.value =
+        "";
+
+    tradesOption.textContent =
+        "Trades";
+
+    tradesOption.className =
+        "placeholder-option";
+
+
+    select.appendChild(
+        tradesOption
+    );
+
+
+    select.classList.add(
+        "placeholder"
+    );
+
+
+    const months = [
+
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre"
+
+    ];
+
+
+    data.days.forEach(
+        date => {
+
+            if (date === "NOW") {
+
+                return;
+
+            }
+
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                date;
+
+
+            const [
+                year,
+                month,
+                day
+            ] = date.split("-");
+
+
+            option.textContent =
+                `${day} ${months[parseInt(month, 10) - 1]} ${year.slice(2)}`;
+
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    select.value =
+        "";
+
+}
+
+
+// ============================================================
+// TRADES
+// ============================================================
+
+async function loadTrades() {
+
+    const select =
+        document.getElementById(
+            "tradeDay"
+        );
+
+
+    const date =
+        select.value;
+
+
+    if (!date) {
+
+        showNow();
+
+        return;
+
+    }
+
+
+    select.classList.remove(
+        "placeholder"
+    );
+
+
+    currentView =
+        "trades";
+
+
+    updateSaveLogsButton();
+
+
+    document
+        .getElementById(
+            "nowButton"
+        )
+        .classList.remove(
+            "active"
+        );
+
+
+    document
+        .getElementById(
+            "day"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "day"
+        )
+        .classList.add(
+            "placeholder"
+        );
+
+
+    const mode =
+        getMode();
+
+
+    const response =
+        await fetch(
+            "/api/trades?mode="
             + mode
             + "&date="
             + encodeURIComponent(
@@ -1308,6 +2234,9 @@ function goToBottom() {
     logs.scrollTop =
         logs.scrollHeight;
 
+
+    autoScrollNow = true;
+
 }
 
 
@@ -1322,6 +2251,8 @@ async function init() {
     await updateStatus();
 
     await loadDays();
+
+    await loadTradeDays();
 
     await showNow();
 
@@ -1341,12 +2272,25 @@ setInterval(
         await updateStatus();
 
 
-        // Solo actualizamos automáticamente
-        // cuando estamos viendo NOW.
+        if (
+            currentView === "now"
+        ) {
 
-        if (currentView === "now") {
+            const status =
+                document.getElementById(
+                    "status"
+                );
 
-            await loadCurrentLog();
+
+            if (
+                status.classList.contains(
+                    "running"
+                )
+            ) {
+
+                await loadCurrentLog();
+
+            }
 
         }
 
