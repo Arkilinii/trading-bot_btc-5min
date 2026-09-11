@@ -20,13 +20,13 @@ from src.config import Config
 from src.binance_feed import BinanceFeed
 from src.polymarket import Polymarket
 from src.strategy import Strategy
+from src.log_manager import archive_log_file, TRADE_HEADER
 
 
 # =============================================================
 # LOGGING
 # =============================================================
 
-from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 
@@ -76,19 +76,12 @@ formatter = logging.Formatter(
 # Guarda TODOS los logs.
 # =============================================================
 
-file_handler = TimedRotatingFileHandler(
-    filename=LOG_FILE,
-    when="midnight",
-    interval=1,
-    backupCount=90,
+file_handler = logging.FileHandler(
+    LOG_FILE,
     encoding="utf-8",
 )
 
-file_handler.suffix = "%Y-%m-%d"
-
-file_handler.setFormatter(
-    formatter
-)
+file_handler.setFormatter(formatter)
 
 
 # =============================================================
@@ -115,26 +108,20 @@ class TradeFilter(logging.Filter):
         )
 
         return (
-            "ROUND" in message_clean
+            "New 5m round" in message_clean
+            or "ROUND" in message_clean
             or "(Paper) Entry" in message_clean
             or "(Paper) Hedge" in message_clean
             or "(Paper) Exit" in message_clean
         )
 
 
-trade_handler = TimedRotatingFileHandler(
-    filename=TRADES_FILE,
-    when="midnight",
-    interval=1,
-    backupCount=90,
+trade_handler = logging.FileHandler(
+    TRADES_FILE,
     encoding="utf-8",
 )
 
-trade_handler.suffix = "%Y-%m-%d"
-
-trade_handler.setFormatter(
-    formatter
-)
+trade_handler.setFormatter(formatter)
 
 trade_handler.addFilter(
     TradeFilter()
@@ -195,10 +182,6 @@ async def main():
 
     cfg = Config()
 
-    os.makedirs(
-        "data",
-        exist_ok=True,
-    )
 
     # =========================================================
     # PAPER ACCOUNT
@@ -219,41 +202,34 @@ async def main():
     total_pnl = 0.00
 
     logging.info("")
-
     logging.info(
-        "██████╗   ██████╗ ████████╗    ████████╗██████╗  █████╗ ██████╗ ██╗███╗   ██╗ ██████╗"
+        "████████╗██████╗  █████╗ ██████╗ ██╗███╗   ██╗ ██████╗     ██████╗  ██████╗ ████████╗"
     )
-
     logging.info(
-        "██╔══██╗ ██╔═══██╗╚══██╔══╝    ╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗██║████╗  ██║██╔════╝"
+        "╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗██║████╗  ██║██╔════╝     ██╔══██╗██╔═══██╗╚══██╔══╝"
     )
-
     logging.info(
-        "██████╔╝ ██║   ██║   ██║          ██║   ██████╔╝███████║██║  ██║██║██╔██╗ ██║██║  ███╗"
+        "   ██║   ██████╔╝███████║██║  ██║██║██╔██╗ ██║██║  ███╗    ██████╔╝██║   ██║   ██║   "
     )
-
     logging.info(
-        "██╔══██╗ ██║   ██║   ██║          ██║   ██╔══██╗██╔══██║██║  ██║██║██║╚██╗██║██║   ██║"
+        "   ██║   ██╔══██╗██╔══██║██║  ██║██║██║╚██╗██║██║   ██║    ██╔══██╗██║   ██║   ██║   "
     )
-
     logging.info(
-        "██████╔╝ ╚██████╔╝   ██║          ██║   ██║  ██║██║  ██║██████╔╝██║██║ ╚████║╚██████╔╝"
+        "   ██║   ██║  ██║██║  ██║██████╔╝██║██║ ╚████║╚██████╔╝    ██████╔╝╚██████╔╝   ██║   "
     )
-
     logging.info(
-        "╚═════╝   ╚═════╝    ╚═╝          ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝"
+        "   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝     ╚═════╝  ╚═════╝    ╚═╝   "
     )
-
+    logging.info("")
     logging.info(
-        "                         by   Arkilinux"
+        "                              by Arkilinux"
     )
-
     logging.info("")
 
     logging.warning(
         GREEN
         + BOLD
-        + "PAPER MODE - PAPER MODE - PAPER MODE - PAPER MODE - PAPER MODE - PAPER MODE - PAPER MODE - PAPER MODE"
+        + "PAPER MODE - Testing: it is a simulation"
         + RESET
     )
 
@@ -323,6 +299,7 @@ async def main():
     # =========================================================
 
     last_round_logged = None
+    completed_rounds = 0
 
     # =========================================================
     # PAPER LOOP
@@ -368,6 +345,24 @@ async def main():
 
             if current_round_id != last_round_logged:
 
+                # The previous round is now complete. Archive its
+                # trade events every round, and the normal logs every
+                # six completed rounds (30 minutes).
+                if last_round_logged is not None:
+
+                    completed_rounds += 1
+
+                    archive_log_file(
+                        TRADES_FILE,
+                        header=TRADE_HEADER,
+                    )
+
+                    if completed_rounds % 6 == 0:
+
+                        archive_log_file(
+                            LOG_FILE,
+                        )
+
                 logging.info(
                     BOLD
                     + "New 5m round %s started | BTC: $%.2f"
@@ -376,9 +371,7 @@ async def main():
                     feed.state.price,
                 )
 
-                last_round_logged = (
-                    current_round_id
-                )
+                last_round_logged = current_round_id
 
             # =====================================================
             # SI LA RONDA YA FUE CERRADA:
@@ -946,6 +939,13 @@ async def main():
             ITALIC 
             + "Logs saved!" 
             + RESET
+        )
+
+        # Archive the incomplete final round when the bot stops.
+        archive_log_file(LOG_FILE)
+        archive_log_file(
+            TRADES_FILE,
+            header=TRADE_HEADER,
         )
 
 if __name__ == "__main__":

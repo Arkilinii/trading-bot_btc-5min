@@ -33,7 +33,6 @@ polymarket-btc5m-bot/
 │   ├── binance_feed.py
 │   ├── polymarket.py
 │   └── strategy.py
-├── data/
 ├── logs/
 ├── tests/
 ├── .gitignore
@@ -100,7 +99,15 @@ Para acelerar una prueba:
 python scripts/paper_btc5m.py --poll 1
 ```
 
-Los logs se guardan en `logs/` y las operaciones simuladas en `data/paper_trades.csv`.
+Los logs normales se guardan temporalmente en `logs/` y se archivan automáticamente en archivos diarios dentro de `logs/paper/` o `logs/live/`. Los eventos de trading se archivan por ronda en `trades/paper/` o `trades/live/`.
+
+## 5. Gestión automática de logs
+
+- **History:** los logs normales se acumulan durante 6 rondas (30 minutos). Al comenzar la ronda siguiente se archivan automáticamente en el archivo histórico del día y se limpia el NOW.
+- **Trades:** los eventos `New 5m round`, `Entry`, `Hedge` y `Exit` se archivan al comenzar cada nueva ronda, dejando el NOW preparado para la ronda siguiente.
+- **STOP:** cualquier contenido pendiente de la ronda o bloque actual se archiva automáticamente antes de terminar el proceso.
+- Ya no se utiliza la carpeta `data/`.
+- El guardado se realiza en los archivos diarios existentes de `logs/<mode>/` y `trades/<mode>/`.
 
 ## 5. Live trading
 
@@ -153,3 +160,27 @@ La "cobertura" implementada por defecto es una **venta parcial del 10% de la pos
 ## Nota sobre ejecución
 
 El modo live utiliza órdenes FOK para la entrada de mercado. Si no existe liquidez suficiente al precio disponible, la orden puede no ejecutarse. Esto es deliberado: el bot no persigue el precio fuera del rango configurado.
+
+## Live / real trading configuration
+
+Real Polymarket credentials are kept outside `.env` in `configuration.py`.
+The supplied file intentionally contains `undefined` placeholders.
+
+Required real-account values:
+
+- `POLY_PRIVATE_KEY`
+- `POLY_API_KEY`
+- `POLY_API_SECRET`
+- `POLY_API_PASSPHRASE`
+- `POLY_FUNDER`
+- `POLY_SIGNATURE_TYPE`
+
+`configuration.py` is ignored by Git so real credentials are not committed.
+
+### Live safety behaviour
+
+`scripts/live_btc5m.py` uses the same round calculation, entry conditions, hedge logic, exit logic and logging flow as paper mode.
+
+If any required real credential is `undefined`, Live does **not** send real orders. It automatically runs the same execution logic in paper fallback and writes a clear `Operation not performed` message. Once all required credentials are configured and the account/authentication check succeeds, real `buy`/`sell` orders are enabled.
+
+The web application uses `scripts/live_btc5m.py` for the Live button and stores Live logs under `logs/live` and `trades/live`.

@@ -18,7 +18,7 @@ from flask import Flask, jsonify, render_template, request
 ROOT = Path(__file__).resolve().parents[1]
 
 PAPER_SCRIPT = ROOT / "scripts" / "paper_btc5m.py"
-LIVE_SCRIPT = ROOT / "script" / "live_btc5m.py"
+LIVE_SCRIPT = ROOT / "scripts" / "live_btc5m.py"
 
 PAPER_LOG_DIR = ROOT / "logs" / "paper"
 LIVE_LOG_DIR = ROOT / "logs" / "live"
@@ -31,7 +31,7 @@ LIVE_TRADES_DIR = ROOT / "trades" / "live"
 # FLASK
 # =============================================================
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="resources", static_url_path="/resources")
 
 
 # =============================================================
@@ -416,9 +416,6 @@ def archive_now_log(mode):
 
             else:
 
-                f.write(
-                    timestamp + " | Running"
-                )
                 f.write("\n")
 
             f.write(content)
@@ -450,7 +447,18 @@ def archive_now_log(mode):
             else:
 
                 f.write(
-                    timestamp + " | Running"
+                    ""
+                )
+                f.write(
+                    "\n"
+                    "████████╗██████╗  █████╗ ██████╗ ██╗███╗   ██╗ ██████╗     ██████╗  ██████╗ ████████╗\n"
+                    "╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗██║████╗  ██║██╔════╝     ██╔══██╗██╔═══██╗╚══██╔══╝\n"
+                    "   ██║   ██████╔╝███████║██║  ██║██║██╔██╗ ██║██║  ███╗    ██████╔╝██║   ██║   ██║   \n"
+                    "   ██║   ██╔══██╗██╔══██║██║  ██║██║██║╚██╗██║██║   ██║    ██╔══██╗██║   ██║   ██║   \n"
+                    "   ██║   ██║  ██║██║  ██║██████╔╝██║██║ ╚████║╚██████╔╝    ██████╔╝╚██████╔╝   ██║   \n"
+                    "   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝     ╚═════╝  ╚═════╝    ╚═╝   \n"
+                    "\n"
+                    "                              by Arkilinux\n"
                 )
                 f.write("\n")
 
@@ -629,6 +637,140 @@ def status():
             ),
         }
     )
+
+
+
+
+# =============================================================
+# CONNECTION CHECK API
+# =============================================================
+
+@app.get("/api/connection-check")
+def connection_check():
+
+    script = ROOT / "scripts" / "connection_check.py"
+
+    if not script.exists():
+
+        return jsonify(
+            {
+                "success": False,
+                "error": f"No existe {script}",
+            }
+        ), 404
+
+    try:
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-u",
+                str(script),
+            ],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+
+        output = result.stdout or ""
+
+        if result.stderr:
+            if output and not output.endswith("\n"):
+                output += "\n"
+            output += result.stderr
+
+        return jsonify(
+            {
+                "success": result.returncode == 0,
+                "output": output,
+                "returncode": result.returncode,
+            }
+        )
+
+    except subprocess.TimeoutExpired:
+
+        return jsonify(
+            {
+                "success": False,
+                "error": "Connection Check timed out after 30 seconds.",
+            }
+        ), 504
+
+    except Exception as exc:
+
+        return jsonify(
+            {
+                "success": False,
+                "error": str(exc),
+            }
+        ), 500
+
+
+# =============================================================
+# ADDRESS CHECK API
+# =============================================================
+
+@app.get("/api/address-check")
+def address_check():
+
+    script = ROOT / "scripts" / "address_check.py"
+
+    if not script.exists():
+
+        return jsonify(
+            {
+                "success": False,
+                "error": f"No existe {script}",
+            }
+        ), 404
+
+    try:
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-u",
+                str(script),
+            ],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+
+        output = result.stdout or ""
+
+        if result.stderr:
+            if output and not output.endswith("\n"):
+                output += "\n"
+            output += result.stderr
+
+        return jsonify(
+            {
+                "success": result.returncode == 0,
+                "output": output,
+                "returncode": result.returncode,
+            }
+        )
+
+    except subprocess.TimeoutExpired:
+
+        return jsonify(
+            {
+                "success": False,
+                "error": "Address Check timed out after 30 seconds.",
+            }
+        ), 504
+
+    except Exception as exc:
+
+        return jsonify(
+            {
+                "success": False,
+                "error": str(exc),
+            }
+        ), 500
 
 
 # =============================================================
