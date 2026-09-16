@@ -1,5 +1,11 @@
+Ubuntu:
 source .venv/bin/activate
 scripts/paper_btc5m.py
 python3 web/app.py
 
+Windows:
+.\.venv\Scripts\Activate.ps1
+(Si no deja) Set-ExecutionPolicy - Scope CurrentUser RemoteSigned
+pip install -r requirements.txt
+python scripts\xxxx.py
 

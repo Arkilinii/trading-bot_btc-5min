@@ -2,7 +2,6 @@
 
 import html
 import re
-import signal
 import subprocess
 import sys
 from datetime import datetime
@@ -25,6 +24,11 @@ LIVE_LOG_DIR = ROOT / "logs" / "live"
 
 PAPER_TRADES_DIR = ROOT / "trades" / "paper"
 LIVE_TRADES_DIR = ROOT / "trades" / "live"
+
+# Cross-platform graceful stop request. The bot processes watch this
+# file and exit through their normal finally block, so summaries/logs
+# are written on both Windows and Linux.
+STOP_FILE = ROOT / ".bot_stop"
 
 
 # =============================================================
@@ -526,6 +530,23 @@ def start_bot(mode):
         mode
     )
 
+    # Remove any stale stop request from a previous run.
+    try:
+        STOP_FILE.unlink(missing_ok=True)
+    except OSError:
+        pass
+
+    # On Windows the child process must be created as a process group so
+    # that we can send CTRL+BREAK to it later. CTRL+C/SIGINT is not a
+    # supported signal for Popen.send_signal() on Windows.
+    popen_kwargs = {}
+
+    if sys.platform == "win32":
+
+        popen_kwargs["creationflags"] = (
+            subprocess.CREATE_NEW_PROCESS_GROUP
+        )
+
     bot_process = subprocess.Popen(
         [
             sys.executable,
@@ -533,6 +554,7 @@ def start_bot(mode):
             str(script),
         ],
         cwd=str(ROOT),
+        **popen_kwargs,
     )
 
     bot_mode = mode
@@ -557,19 +579,53 @@ def stop_bot():
 
     try:
 
-        bot_process.send_signal(
-            signal.SIGINT
-        )
+        # ---------------------------------------------------------
+        # GRACEFUL STOP
+        #
+        # Do not rely on OS signals here. Windows does not support
+        # SIGINT through Popen.send_signal() reliably, and CTRL+BREAK
+        # can also depend on console/process-group details. Instead,
+        # request a graceful shutdown through a small shared file.
+        # Both bot scripts check it inside their main loop and leave
+        # through their normal finally block.
+        # ---------------------------------------------------------
+        STOP_FILE.touch(exist_ok=True)
 
         bot_process.wait(
-            timeout=10
+            timeout=15
         )
 
     except subprocess.TimeoutExpired:
 
+        # The bot did not shut down gracefully. At this point there
+        # is no safe way to guarantee that its asyncio finally block
+        # has run, so force the process to stop rather than leaving a
+        # zombie/running bot behind.
         bot_process.kill()
 
         bot_process.wait()
+
+    except (
+        ValueError,
+        AttributeError,
+        OSError,
+    ) as exc:
+
+        # Defensive Windows fallback. If CTRL+BREAK is unavailable
+        # on a particular Windows environment, stop the process
+        # without crashing the Flask /api/stop endpoint.
+        if sys.platform == "win32":
+
+            try:
+                bot_process.terminate()
+                bot_process.wait(
+                    timeout=5
+                )
+            except subprocess.TimeoutExpired:
+                bot_process.kill()
+                bot_process.wait()
+        else:
+            raise
 
     finally:
 
@@ -587,21 +643,9 @@ def stop_bot():
         stopped_mode
     )
 
-    # =========================================================
-    # ARCHIVAR
-    #
-    # IMPORTANTE:
-    # archive_now_log() YA NO VACÍA NOW.
-    # =========================================================
-
-    if stopped_mode in (
-        "paper",
-        "live",
-    ):
-
-        archive_now_log(
-            stopped_mode
-        )
+    # The bot process already archived the final NOW files in its
+    # finally block. We intentionally do not archive them again here:
+    # NOW must remain available to the UI with the final summary.
 
     return True, final_log
 

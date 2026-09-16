@@ -27,6 +27,7 @@ from src.log_manager import archive_log_file, TRADE_HEADER
 # =============================================================
 
 ROOT = Path(__file__).resolve().parents[1]
+STOP_FILE = ROOT / ".bot_stop"
 
 LOG_DIR = ROOT / "logs" / "live"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
@@ -342,6 +343,11 @@ async def main():
     try:
 
         while True:
+
+            # Cross-platform graceful stop requested by the web UI.
+            if STOP_FILE.exists():
+                logging.info("Stop requested by web interface")
+                break
 
             if feed.state.price is None:
 
@@ -1024,9 +1030,10 @@ async def main():
         )
 
         # Archive the incomplete final round when the bot stops.
-        archive_log_file(LOG_FILE)
+        archive_log_file(LOG_FILE, clear=False)
         archive_log_file(
             TRADES_FILE,
+            clear=False,
             header=TRADE_HEADER,
         )
 
