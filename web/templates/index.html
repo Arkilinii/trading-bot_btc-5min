@@ -1,0 +1,2880 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+   content="width=device-width, initial-scale=1.0">
+
+<title>Bot Trading</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+
+    margin: 0;
+
+    background: #111;
+
+    color: #eee;
+
+    font-family: Cambria, Georgia, serif;
+}
+
+.container {
+
+    width: 95%;
+
+    max-width: 1500px;
+
+    margin: 30px auto;
+}
+
+h1 {
+    margin: 0;
+}
+
+.subtitle {
+
+    color: #888;
+
+    margin-top: 5px;
+
+    margin-bottom: 25px;
+}
+
+.top {
+
+    background: #1b1b1b;
+
+    padding: 20px;
+
+    border-radius: 10px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 20px;
+}
+
+.mode-area {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+}
+
+
+/* ========================================================= */
+/* PAPER / LIVE SWITCH */
+/* ========================================================= */
+
+.mode-switch {
+
+    display: flex;
+
+    align-items: center;
+
+    height: 56px;
+
+    background: #292929;
+
+    border: 1px solid #3d3d3d;
+
+    border-radius: 10px;
+
+    padding: 6px 12px;
+
+    gap: 8px;
+
+    min-width: 250px;
+
+    box-shadow:
+        inset 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+
+/* ========================================================= */
+/* LABELS */
+/* ========================================================= */
+
+.mode-label {
+
+    width: 85px;
+
+    text-align: center;
+
+    font-weight: bold;
+
+    font-size: 15px;
+
+    user-select: none;
+
+    transition:
+        color 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.paper-label {
+
+    color: #32d74b;
+}
+
+.live-label {
+
+    color: #666;
+}
+
+
+/* ========================================================= */
+/* SWITCH */
+/* ========================================================= */
+
+.mode-toggle {
+
+    position: relative;
+
+    width: 70px;
+
+    height: 40px;
+
+    padding: 0;
+
+    border: none;
+
+    border-radius: 20px;
+
+    background: #3a3a3a;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease;
+}
+
+.mode-toggle:hover {
+
+    background: #444;
+}
+
+.mode-toggle:disabled {
+
+    cursor: not-allowed;
+
+    opacity: 0.7;
+}
+
+
+/* ========================================================= */
+/* CÍRCULO */
+/* ========================================================= */
+
+.toggle-circle {
+
+    position: absolute;
+
+    top: 5px;
+
+    left: 5px;
+
+    width: 30px;
+
+    height: 30px;
+
+    border-radius: 50%;
+
+    background: #32d74b;
+
+    box-shadow:
+        0 2px 5px rgba(0, 0, 0, 0.45);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+
+/* ========================================================= */
+/* PAPER ACTIVO */
+/* ========================================================= */
+
+.mode-toggle.paper-active {
+
+    background: #214d29;
+}
+
+.mode-toggle.paper-active .toggle-circle {
+
+    transform: translateX(0);
+
+    background: #32d74b;
+}
+
+
+/* ========================================================= */
+/* LIVE ACTIVO */
+/* ========================================================= */
+
+.mode-toggle.live-active {
+
+    background: #5a2421;
+}
+
+.mode-toggle.live-active .toggle-circle {
+
+    transform: translateX(30px);
+
+    background: #ff453a;
+}
+
+
+/* ========================================================= */
+/* LABEL LIVE ACTIVO */
+/* ========================================================= */
+
+.mode-switch.live-selected .paper-label {
+
+    color: #666;
+}
+
+.mode-switch.live-selected .live-label {
+
+    color: #ff453a;
+}
+
+
+/* ========================================================= */
+/* LABEL PAPER ACTIVO */
+/* ========================================================= */
+
+.mode-switch.paper-selected .paper-label {
+
+    color: #32d74b;
+}
+
+.mode-switch.paper-selected .live-label {
+
+    color: #666;
+}
+
+
+/* ========================================================= */
+/* STATUS */
+/* ========================================================= */
+
+.status-area {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+}
+
+.status {
+
+    font-weight: bold;
+
+    font-size: 16px;
+
+    margin-top: 0;
+}
+
+.running {
+    color: #32d74b;
+}
+
+.stopped {
+    color: #ff453a;
+}
+
+.live-warning {
+
+    color: #ff453a;
+
+    font-weight: bold;
+
+    display: none;
+
+    margin-top: 0;
+}
+
+
+/* ========================================================= */
+/* BUTTONS */
+/* ========================================================= */
+
+.buttons {
+
+    display: flex;
+
+    gap: 10px;
+}
+
+button {
+
+    border: none;
+
+    padding: 12px 22px;
+
+    border-radius: 7px;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    font-family: Cambria, Georgia, serif;
+}
+
+.start {
+
+    background: #32d74b;
+
+    color: black;
+}
+
+.stop {
+
+    background: #ff453a;
+
+    color: white;
+}
+
+button:disabled {
+
+    opacity: 0.35;
+
+    cursor: not-allowed;
+}
+
+
+
+
+/* ========================================================= */
+/* CONNECTION / ADDRESS CHECK BUTTONS */
+/* ========================================================= */
+
+.info-button {
+
+    width: 46px;
+
+    height: 46px;
+
+    padding: 5px;
+
+    border-radius: 7px;
+
+    background: #252525;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+.info-button img {
+
+    width: 32px;
+
+    height: 32px;
+
+    display: block;
+
+}
+
+.info-button:hover {
+
+    background: #333333;
+
+}
+
+.info-button:disabled {
+
+    opacity: 0.45;
+
+    cursor: wait;
+
+}
+
+/* ========================================================= */
+/* CHECK MODAL */
+/* ========================================================= */
+
+.check-modal {
+
+    display: none;
+
+    position: fixed;
+
+    z-index: 1000;
+
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.72);
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 20px;
+
+}
+
+.check-modal-content {
+
+    width: min(900px, 95vw);
+
+    max-height: 85vh;
+
+    background: #1b1b1b;
+
+    border: 1px solid #3d3d3d;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+.check-modal-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 15px 18px;
+
+    border-bottom: 1px solid #333;
+
+    font-weight: bold;
+
+}
+
+.check-modal-close {
+
+    background: transparent;
+
+    color: #aaa;
+
+    font-size: 26px;
+
+    line-height: 1;
+
+    padding: 0 5px;
+
+}
+
+.check-modal-close:hover {
+
+    color: white;
+
+}
+
+.check-loading {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 18px;
+
+    color: #aaa;
+
+}
+
+.spinner {
+
+    width: 18px;
+
+    height: 18px;
+
+    border: 3px solid #444;
+
+    border-top-color: #eee;
+
+    border-radius: 50%;
+
+    animation: check-spin 0.8s linear infinite;
+
+}
+
+@keyframes check-spin {
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+#checkOutput {
+
+    margin: 0;
+
+    padding: 18px;
+
+    overflow: auto;
+
+    white-space: pre-wrap;
+
+    word-break: break-word;
+
+    color: #eee;
+
+    font-family: Consolas, Monaco, monospace;
+
+    font-size: 13px;
+
+    line-height: 1.45;
+
+    min-height: 120px;
+
+}
+
+.check-output-bold {
+    font-weight: 700;
+}
+
+.check-output-black { color: #000; }
+.check-output-red { color: #ff5555; }
+.check-output-green { color: #50fa7b; }
+.check-output-yellow { color: #f1fa8c; }
+.check-output-blue { color: #6272a4; }
+.check-output-magenta { color: #ff79c6; }
+.check-output-cyan { color: #8be9fd; }
+.check-output-white { color: #f8f8f2; }
+.check-output-bright-black { color: #6272a4; }
+.check-output-bright-red { color: #ff6e6e; }
+.check-output-bright-green { color: #69ff94; }
+.check-output-bright-yellow { color: #ffffa5; }
+.check-output-bright-blue { color: #8be9fd; }
+.check-output-bright-magenta { color: #ff92df; }
+.check-output-bright-cyan { color: #a4ffff; }
+.check-output-bright-white { color: #ffffff; }
+
+
+/* ========================================================= */
+/* LOG PANEL */
+/* ========================================================= */
+
+.panel {
+
+    background: #1b1b1b;
+
+    padding: 20px;
+
+    border-radius: 10px;
+}
+
+.panel-header {
+
+    position: relative;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    margin-bottom: 15px;
+}
+
+
+/* ========================================================= */
+/* NAVEGACIÓN */
+/* ========================================================= */
+
+.log-navigation {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+}
+
+
+/* ========================================================= */
+/* BOTÓN NOW */
+/* ========================================================= */
+
+#nowButton {
+
+    background: #292929;
+
+    color: white;
+
+    border: 1px solid #444;
+
+    padding: 10px 16px;
+
+    border-radius: 6px;
+
+    font-size: 15px;
+
+    font-family: Cambria, Georgia, serif;
+
+    cursor: pointer;
+}
+
+#nowButton:hover {
+
+    background: #3a3a3a;
+}
+
+#nowButton.active {
+
+    background: #444;
+
+    border-color: #666;
+}
+
+
+/* ========================================================= */
+/* SELECT HISTORY / TRADES */
+/* ========================================================= */
+
+.log-select {
+
+    background: #222;
+
+    color: white;
+
+    border: 1px solid #444;
+
+    padding: 10px;
+
+    border-radius: 6px;
+
+    font-size: 15px;
+
+    font-family: Cambria, Georgia, serif;
+
+    cursor: pointer;
+}
+
+.log-select.placeholder {
+
+    color: #666;
+}
+
+.log-select option {
+
+    background: #222;
+
+    color: white;
+}
+
+.log-select option.placeholder-option {
+
+    color: #666;
+}
+
+
+/* ========================================================= */
+/* CONTENEDOR LOGS */
+/* ========================================================= */
+
+.logs-container {
+
+    position: relative;
+}
+
+
+/* ========================================================= */
+/* LOGS */
+/* ========================================================= */
+
+#logs {
+
+    background: #080808;
+
+    border-radius: 7px;
+
+    padding: 15px;
+
+    height: 700px;
+
+    overflow-y: auto;
+
+    scrollbar-gutter: stable;
+
+    scroll-behavior: auto !important;
+
+    white-space: pre-wrap;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 13px;
+
+    line-height: 1.45;
+}
+
+
+/* ========================================================= */
+/* SAVE LOGS */
+/* ========================================================= */
+
+#saveLogs {
+
+    position: absolute;
+
+    top: 8px;
+
+    right: 8px;
+
+    padding: 5px 12px;
+
+    background: #292929;
+
+    color: #ffffff;
+
+    border: 1px solid #444;
+
+    border-radius: 6px;
+
+    font-family: Cambria, Georgia, serif;
+
+    font-size: 12px;
+
+    cursor: pointer;
+
+    z-index: 2;
+}
+
+#saveLogs:hover {
+
+    background: #3a3a3a;
+}
+
+#saveLogs:disabled {
+
+    opacity: 0.35;
+
+    cursor: not-allowed;
+}
+
+
+/* ========================================================= */
+/* IR AL FINAL */
+/* ========================================================= */
+
+#goBottom {
+
+    display: block;
+
+    margin: 8px auto 0;
+
+    padding: 5px 12px;
+
+    background: #292929;
+
+    color: #ffffff;
+
+    border: 1px solid #444;
+
+    border-radius: 6px;
+
+    font-family: Cambria, Georgia, serif;
+
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+#goBottom:hover {
+
+    background: #3a3a3a;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Bot trading - BTC 5m Strategy - Polymarket</h1>
+
+<div class="subtitle">
+by Arkilinux
+</div>
+
+
+<!-- ===================================================== -->
+<!-- CONTROL -->
+<!-- ===================================================== -->
+
+<div class="top">
+
+<div>
+
+<div class="mode-area">
+
+
+<!-- ================================================= -->
+<!-- PAPER / LIVE SWITCH -->
+<!-- ================================================= -->
+
+<div
+    class="mode-switch paper-selected"
+    id="modeSwitch">
+
+<div class="mode-label paper-label">
+    PAPER
+</div>
+
+<button
+    id="modeToggle"
+    class="mode-toggle paper-active"
+    onclick="toggleMode()"
+    aria-label="Cambiar entre Paper y Live">
+
+    <span class="toggle-circle"></span>
+
+</button>
+
+<div class="mode-label live-label">
+    LIVE
+</div>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- STATUS -->
+<!-- ================================================= -->
+
+<div class="status-area">
+
+<div
+    id="status"
+    class="status stopped">
+
+🔴 STOPPED
+
+</div>
+
+<div
+    id="liveWarning"
+    class="live-warning">
+
+⚠️
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="buttons">
+
+<button
+    id="connectionCheckButton"
+    class="info-button"
+    onclick="runCheck('connection')"
+    title="Connection Check">
+
+    <img
+        src="{{ url_for('static', filename='info.png') }}"
+        alt="Connection Check">
+
+</button>
+
+<button
+    id="addressCheckButton"
+    class="info-button"
+    onclick="runCheck('address')"
+    title="Address Check">
+
+    <img
+        src="{{ url_for('static', filename='wallet.png') }}"
+        alt="Address Check">
+
+</button>
+
+<button
+    id="startButton"
+    class="start"
+    onclick="startBot()">
+
+▶ START
+
+</button>
+
+<button
+    id="stopButton"
+    class="stop"
+    onclick="stopBot()"
+    disabled>
+
+■ STOP
+
+</button>
+
+</div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- LOGS -->
+<!-- ===================================================== -->
+
+<div class="panel">
+
+<div class="panel-header">
+
+<div class="log-navigation">
+
+
+<!-- ================================================= -->
+<!-- NOW -->
+<!-- ================================================= -->
+
+<button
+    id="nowButton"
+    class="active"
+    onclick="showNow()">
+
+Now
+
+</button>
+
+
+<!-- ================================================= -->
+<!-- HISTORY -->
+<!-- ================================================= -->
+
+<select
+    id="day"
+    class="log-select placeholder"
+    onchange="loadHistory()">
+
+<option
+    value=""
+    class="placeholder-option">
+
+History
+
+</option>
+
+</select>
+
+
+<!-- ================================================= -->
+<!-- TRADES -->
+<!-- ================================================= -->
+
+<select
+    id="tradeDay"
+    class="log-select placeholder"
+    onchange="loadTrades()">
+
+<option
+    value=""
+    class="placeholder-option">
+
+Trades
+
+</option>
+
+</select>
+
+
+</div>
+
+</div>
+
+
+<div class="logs-container">
+
+<pre id="logs">
+Cargando...
+</pre>
+
+
+<!-- ================================================= -->
+<!-- SAVE LOGS -->
+<!-- ================================================= -->
+
+<button
+    id="saveLogs"
+    onclick="saveLogs()"
+    disabled>
+
+Save logs
+
+</button>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- GO TO BOTTOM -->
+<!-- ================================================= -->
+
+<button
+    id="goBottom"
+    onclick="goToBottom()">
+
+↓ Go to the bottom ↓
+
+</button>
+
+</div>
+
+</div>
+
+
+
+
+<!-- ===================================================== -->
+<!-- CONNECTION / ADDRESS CHECK MODAL -->
+<!-- ===================================================== -->
+
+<div
+    id="checkModal"
+    class="check-modal"
+    onclick="if (event.target === this) closeCheckModal()">
+
+    <div class="check-modal-content">
+
+        <div class="check-modal-header">
+
+            <span id="checkModalTitle">
+                Connection Check
+            </span>
+
+            <button
+                class="check-modal-close"
+                onclick="closeCheckModal()">
+                ×
+            </button>
+
+        </div>
+
+        <div
+            id="checkLoading"
+            class="check-loading">
+
+            <div class="spinner"></div>
+
+            <span>Running...</span>
+
+        </div>
+
+        <pre id="checkOutput"></pre>
+
+    </div>
+
+</div>
+
+
+<script>
+
+
+// ============================================================
+// MODE
+// ============================================================
+
+let currentMode = "paper";
+
+let currentView = "now";
+
+
+// ============================================================
+// ÚLTIMO NOW MOSTRADO
+// ============================================================
+
+let lastNowLog = "";
+
+
+// ============================================================
+// AUTOSCROLL
+// ============================================================
+
+let autoScrollNow = true;
+
+
+// ============================================================
+// ESTADO DEL SAVE LOGS
+// ============================================================
+
+let nowSaved = false;
+
+
+
+
+// ============================================================
+// CONNECTION / ADDRESS CHECKS
+// ============================================================
+
+let checkRunning = false;
+
+
+function escapeCheckHtml(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+function ansiToHtml(value) {
+
+    const text = String(value);
+    const ansiRegex = /\x1b\[([0-9;]*)m/g;
+
+    let result = "";
+    let lastIndex = 0;
+
+    const colorClasses = {
+        30: "check-output-black",
+        31: "check-output-red",
+        32: "check-output-green",
+        33: "check-output-yellow",
+        34: "check-output-blue",
+        35: "check-output-magenta",
+        36: "check-output-cyan",
+        37: "check-output-white",
+        90: "check-output-bright-black",
+        91: "check-output-bright-red",
+        92: "check-output-bright-green",
+        93: "check-output-bright-yellow",
+        94: "check-output-bright-blue",
+        95: "check-output-bright-magenta",
+        96: "check-output-bright-cyan",
+        97: "check-output-bright-white"
+    };
+
+    let currentClasses = [];
+
+    function appendText(chunk) {
+
+        if (!chunk) {
+            return;
+        }
+
+        const escaped = escapeCheckHtml(chunk);
+
+        if (currentClasses.length) {
+            result +=
+                '<span class="'
+                + currentClasses.join(" ")
+                + '">'
+                + escaped
+                + "</span>";
+        } else {
+            result += escaped;
+        }
+
+    }
+
+    let match;
+
+    while ((match = ansiRegex.exec(text)) !== null) {
+
+        appendText(text.slice(lastIndex, match.index));
+        lastIndex = ansiRegex.lastIndex;
+
+        const codes = match[1] === ""
+            ? [0]
+            : match[1].split(";").map(Number);
+
+        for (const code of codes) {
+
+            if (code === 0) {
+                currentClasses = [];
+            } else if (code === 1) {
+                if (!currentClasses.includes("check-output-bold")) {
+                    currentClasses.push("check-output-bold");
+                }
+            } else if (code === 22) {
+                currentClasses = currentClasses.filter(
+                    cls => cls !== "check-output-bold"
+                );
+            } else if (colorClasses[code]) {
+                currentClasses = currentClasses.filter(
+                    cls => !cls.startsWith("check-output-")
+                    || cls === "check-output-bold"
+                );
+                currentClasses.push(colorClasses[code]);
+            }
+
+        }
+
+    }
+
+    appendText(text.slice(lastIndex));
+
+    return result;
+
+}
+
+
+async function runCheck(type) {
+
+    if (checkRunning) {
+        return;
+    }
+
+    const modal =
+        document.getElementById(
+            "checkModal"
+        );
+
+    const title =
+        document.getElementById(
+            "checkModalTitle"
+        );
+
+    const output =
+        document.getElementById(
+            "checkOutput"
+        );
+
+    const loading =
+        document.getElementById(
+            "checkLoading"
+        );
+
+    const connectionButton =
+        document.getElementById(
+            "connectionCheckButton"
+        );
+
+    const addressButton =
+        document.getElementById(
+            "addressCheckButton"
+        );
+
+    const endpoint =
+        type === "connection"
+            ? "/api/connection-check"
+            : "/api/address-check";
+
+    title.textContent =
+        type === "connection"
+            ? "Connection Check"
+            : "Address Check";
+
+    output.textContent = "";
+
+    loading.style.display = "flex";
+    modal.style.display = "flex";
+
+    checkRunning = true;
+    connectionButton.disabled = true;
+    addressButton.disabled = true;
+
+    try {
+
+        const response =
+            await fetch(endpoint);
+
+        const data =
+            await response.json();
+
+        if (data.output) {
+            output.innerHTML = ansiToHtml(data.output);
+        } else if (data.error) {
+            output.innerHTML = ansiToHtml(data.error);
+        } else {
+            output.textContent =
+                "The check returned no output.";
+        }
+
+    } catch (error) {
+
+        output.innerHTML = ansiToHtml(
+            "Error executing check:\n\n"
+            + error
+        );
+
+    } finally {
+
+        loading.style.display = "none";
+
+        checkRunning = false;
+        connectionButton.disabled = false;
+        addressButton.disabled = false;
+
+    }
+
+}
+
+
+function closeCheckModal() {
+
+    if (checkRunning) {
+        return;
+    }
+
+    document.getElementById(
+        "checkModal"
+    ).style.display = "none";
+
+}
+
+// ============================================================
+// GET MODE
+// ============================================================
+
+function getMode() {
+
+    return currentMode;
+
+}
+
+
+// ============================================================
+// ACTUALIZAR ESTADO DEL BOTÓN SAVE LOGS
+// ============================================================
+
+function updateSaveLogsButton() {
+
+    const button =
+        document.getElementById(
+            "saveLogs"
+        );
+
+
+    // ========================================================
+    // SAVE LOGS SOLO EXISTE VISUALMENTE EN NOW
+    // ========================================================
+
+    if (currentView !== "now") {
+
+        button.style.display =
+            "none";
+
+        return;
+
+    }
+
+
+    button.style.display =
+        "block";
+
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+
+    // ========================================================
+    // RUNNING = DESHABILITADO
+    // ========================================================
+
+    if (
+        status.classList.contains(
+            "running"
+        )
+    ) {
+
+        button.disabled =
+            true;
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // SI YA SE GUARDÓ = DESHABILITADO
+    // ========================================================
+
+    if (nowSaved) {
+
+        button.disabled =
+            true;
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // STOPPED + NOW PENDIENTE = HABILITADO
+    // ========================================================
+
+    button.disabled =
+        false;
+
+}
+
+
+// ============================================================
+// TOGGLE MODE
+// ============================================================
+
+function toggleMode() {
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+    if (
+        status.classList.contains(
+            "running"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    if (currentMode === "paper") {
+
+        currentMode = "live";
+
+    } else {
+
+        currentMode = "paper";
+
+    }
+
+
+    lastNowLog = "";
+
+    autoScrollNow = true;
+
+    nowSaved = false;
+
+
+    updateModeUI();
+
+    loadDays();
+
+    loadTradeDays();
+
+    showNow();
+
+}
+
+
+// ============================================================
+// MODE UI
+// ============================================================
+
+function updateModeUI() {
+
+    const modeSwitch =
+        document.getElementById(
+            "modeSwitch"
+        );
+
+    const toggle =
+        document.getElementById(
+            "modeToggle"
+        );
+
+    const warning =
+        document.getElementById(
+            "liveWarning"
+        );
+
+
+    if (currentMode === "live") {
+
+        toggle.classList.remove(
+            "paper-active"
+        );
+
+        toggle.classList.add(
+            "live-active"
+        );
+
+
+        modeSwitch.classList.remove(
+            "paper-selected"
+        );
+
+        modeSwitch.classList.add(
+            "live-selected"
+        );
+
+
+        warning.style.display =
+            "block";
+
+    } else {
+
+        toggle.classList.remove(
+            "live-active"
+        );
+
+        toggle.classList.add(
+            "paper-active"
+        );
+
+
+        modeSwitch.classList.remove(
+            "live-selected"
+        );
+
+        modeSwitch.classList.add(
+            "paper-selected"
+        );
+
+
+        warning.style.display =
+            "none";
+
+    }
+
+}
+
+
+// ============================================================
+// STATUS
+// ============================================================
+
+async function updateStatus() {
+
+    const response =
+        await fetch(
+            "/api/status"
+        );
+
+    const data =
+        await response.json();
+
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+    const start =
+        document.getElementById(
+            "startButton"
+        );
+
+    const stop =
+        document.getElementById(
+            "stopButton"
+        );
+
+    const toggle =
+        document.getElementById(
+            "modeToggle"
+        );
+
+
+    if (data.running) {
+
+        status.textContent =
+            "🟢 RUNNING";
+
+        status.className =
+            "status running";
+
+        start.disabled =
+            true;
+
+        stop.disabled =
+            false;
+
+        toggle.disabled =
+            true;
+
+
+        currentMode =
+            data.mode;
+
+        updateModeUI();
+
+
+    } else {
+
+        status.textContent =
+            "🔴 STOPPED";
+
+        status.className =
+            "status stopped";
+
+        start.disabled =
+            false;
+
+        stop.disabled =
+            true;
+
+        toggle.disabled =
+            false;
+
+    }
+
+
+    updateSaveLogsButton();
+
+}
+
+
+// ============================================================
+// START
+// ============================================================
+
+async function startBot() {
+
+    const mode =
+        getMode();
+
+
+    if (mode === "live") {
+
+        const confirmed =
+            confirm(
+                "⚠️ ATENCIÓN\n\n"
+                + "Has seleccionado LIVE.\n\n"
+                + "El bot realizará operaciones "
+                + "REALES en Polymarket "
+                + "utilizando fondos reales.\n\n"
+                + "¿Quieres iniciar el bot LIVE?"
+            );
+
+
+        if (!confirmed) {
+
+            return;
+
+        }
+
+    }
+
+
+    // ========================================================
+    // NUEVO RUN
+    // ========================================================
+
+    lastNowLog = "";
+
+    autoScrollNow = true;
+
+    nowSaved = false;
+
+
+    const saveLogsButton =
+        document.getElementById(
+            "saveLogs"
+        );
+
+
+    saveLogsButton.disabled =
+        true;
+
+
+    const logs =
+        document.getElementById(
+            "logs"
+        );
+
+    logs.innerHTML =
+        "";
+
+
+    const response =
+        await fetch(
+            "/api/start",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify(
+                    {
+                        mode: mode
+                    }
+                )
+            }
+        );
+
+
+    const data =
+        await response.json();
+
+
+    if (!data.success) {
+
+        alert(
+            data.error
+            || "No se pudo iniciar el bot."
+        );
+
+        return;
+
+    }
+
+
+    updateStatus();
+
+    loadDays();
+
+    loadTradeDays();
+
+
+    setTimeout(
+        showNow,
+        1000
+    );
+
+}
+
+
+// ============================================================
+// STOP
+// ============================================================
+
+async function stopBot() {
+
+    const response =
+        await fetch(
+            "/api/stop",
+            {
+                method: "POST"
+            }
+        );
+
+
+    const data =
+        await response.json();
+
+
+    if (!data.success) {
+
+        alert(
+            "El bot no estaba ejecutándose."
+        );
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // EL BACKEND DEVUELVE EL RUN FINAL COMPLETO
+    // ========================================================
+
+    currentView =
+        "now";
+
+
+    const nowButton =
+        document.getElementById(
+            "nowButton"
+        );
+
+    nowButton.classList.add(
+        "active"
+    );
+
+
+    const day =
+        document.getElementById(
+            "day"
+        );
+
+    const tradeDay =
+        document.getElementById(
+            "tradeDay"
+        );
+
+
+    day.value =
+        "";
+
+    tradeDay.value =
+        "";
+
+
+    day.classList.add(
+        "placeholder"
+    );
+
+    tradeDay.classList.add(
+        "placeholder"
+    );
+
+
+    // ========================================================
+    // GUARDAR EL LOG FINAL
+    // ========================================================
+
+    lastNowLog =
+        data.log || "";
+
+
+    // ========================================================
+    // NUEVO LOG DISPONIBLE PARA GUARDAR
+    // ========================================================
+
+    nowSaved =
+        false;
+
+
+    const logs =
+        document.getElementById(
+            "logs"
+        );
+
+
+    logs.innerHTML =
+        lastNowLog;
+
+
+    autoScrollNow =
+        true;
+
+
+    logs.scrollTop =
+        logs.scrollHeight;
+
+
+    await loadDays();
+
+    await loadTradeDays();
+
+    await updateStatus();
+
+}
+
+
+// ============================================================
+// SAVE LOGS
+// ============================================================
+
+async function saveLogs() {
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+
+    // ========================================================
+    // SOLO NOW
+    // ========================================================
+
+    if (currentView !== "now") {
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // SOLO STOPPED
+    // ========================================================
+
+    if (
+        status.classList.contains(
+            "running"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // EVITAR GUARDAR DOS VECES
+    // ========================================================
+
+    if (nowSaved) {
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // IMPORTANTE:
+    // MARCAR COMO GUARDADO INMEDIATAMENTE
+    //
+    // Así el botón NO vuelve a habilitarse durante
+    // las actualizaciones de estado ni mientras se
+    // ejecuta la petición.
+    //
+    // Solo START vuelve a poner nowSaved = false.
+    // ========================================================
+
+    nowSaved =
+        true;
+
+
+    const saveButton =
+        document.getElementById(
+            "saveLogs"
+        );
+
+
+    const logs =
+        document.getElementById(
+            "logs"
+        );
+
+
+    saveButton.disabled =
+        true;
+
+
+    const response =
+        await fetch(
+            "/api/save-now",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify(
+                    {
+                        mode: getMode()
+                    }
+                )
+            }
+        );
+
+
+    const data =
+        await response.json();
+
+
+    if (!data.success) {
+
+        alert(
+            data.error
+            || "No se pudieron guardar los logs."
+        );
+
+
+        // ====================================================
+        // SOLO EN CASO DE ERROR REAL
+        // PERMITIMOS REINTENTAR
+        // ====================================================
+
+        nowSaved =
+            false;
+
+        updateSaveLogsButton();
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // BORRAR NOW
+    // ========================================================
+
+    lastNowLog =
+        "";
+
+    logs.innerHTML =
+        "";
+
+
+    autoScrollNow =
+        true;
+
+
+    logs.scrollTop =
+        0;
+
+
+    // ========================================================
+    // ACTUALIZAR HISTORY / TRADES
+    // ========================================================
+
+    await loadDays();
+
+    await loadTradeDays();
+
+
+    // ========================================================
+    // ASEGURAR NOW
+    // ========================================================
+
+    currentView =
+        "now";
+
+
+    document
+        .getElementById(
+            "nowButton"
+        )
+        .classList.add(
+            "active"
+        );
+
+
+    document
+        .getElementById(
+            "day"
+        )
+        .value = "";
+
+    document
+        .getElementById(
+            "tradeDay"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "day"
+        )
+        .classList.add(
+            "placeholder"
+        );
+
+    document
+        .getElementById(
+            "tradeDay"
+        )
+        .classList.add(
+            "placeholder"
+        );
+
+
+    // ========================================================
+    // PERMANECE DESHABILITADO
+    //
+    // No se pone nowSaved = false aquí.
+    // Solo START lo reseteará.
+    // ========================================================
+
+    saveButton.disabled =
+        true;
+
+}
+
+
+// ============================================================
+// SHOW NOW
+// ============================================================
+
+async function showNow() {
+
+    currentView =
+        "now";
+
+
+    const nowButton =
+        document.getElementById(
+            "nowButton"
+        );
+
+    nowButton.classList.add(
+        "active"
+    );
+
+
+    const day =
+        document.getElementById(
+            "day"
+        );
+
+    const tradeDay =
+        document.getElementById(
+            "tradeDay"
+        );
+
+
+    day.value = "";
+
+    tradeDay.value = "";
+
+
+    day.classList.add(
+        "placeholder"
+    );
+
+    tradeDay.classList.add(
+        "placeholder"
+    );
+
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+
+    if (
+        !status.classList.contains(
+            "running"
+        )
+        &&
+        lastNowLog
+    ) {
+
+        const logs =
+            document.getElementById(
+                "logs"
+            );
+
+        logs.innerHTML =
+            lastNowLog;
+
+        logs.scrollTop =
+            logs.scrollHeight;
+
+        updateSaveLogsButton();
+
+        return;
+
+    }
+
+
+    await loadCurrentLog();
+
+    updateSaveLogsButton();
+
+}
+
+
+// ============================================================
+// CURRENT LOG
+// ============================================================
+
+async function loadCurrentLog() {
+
+    const mode =
+        getMode();
+
+
+    const logs =
+        document.getElementById(
+            "logs"
+        );
+
+
+    const distanceFromBottom =
+        logs.scrollHeight
+        - logs.scrollTop
+        - logs.clientHeight;
+
+
+    const wasAtBottom =
+        distanceFromBottom <= 30;
+
+
+    const previousScrollTop =
+        logs.scrollTop;
+
+
+    const response =
+        await fetch(
+            "/api/log?mode="
+            + mode
+        );
+
+
+    const data =
+        await response.json();
+
+
+    if (currentView === "now") {
+
+        lastNowLog =
+            data.log;
+
+    }
+
+
+    logs.innerHTML =
+        data.log;
+
+
+    if (
+        wasAtBottom
+        ||
+        autoScrollNow
+    ) {
+
+        logs.scrollTop =
+            logs.scrollHeight;
+
+    } else {
+
+        logs.scrollTop =
+            previousScrollTop;
+
+    }
+
+}
+
+
+// ============================================================
+// DETECTAR SCROLL MANUAL DEL USUARIO
+// ============================================================
+
+document
+    .getElementById("logs")
+    .addEventListener(
+        "scroll",
+        function() {
+
+            const logs = this;
+
+
+            const distanceFromBottom =
+                logs.scrollHeight
+                - logs.scrollTop
+                - logs.clientHeight;
+
+
+            if (
+                distanceFromBottom <= 30
+            ) {
+
+                autoScrollNow = true;
+
+            } else {
+
+                autoScrollNow = false;
+
+            }
+
+        }
+    );
+
+
+// ============================================================
+// DAYS - HISTORY
+// ============================================================
+
+async function loadDays(
+    preserveSelection = false
+) {
+
+    const select =
+        document.getElementById(
+            "day"
+        );
+
+    const previousValue =
+        preserveSelection
+            ? select.value
+            : "";
+
+    const mode =
+        getMode();
+
+
+    const response =
+        await fetch(
+            "/api/days?mode="
+            + mode
+        );
+
+
+    const data =
+        await response.json();
+
+
+    select.innerHTML =
+        "";
+
+
+    const historyOption =
+        document.createElement(
+            "option"
+        );
+
+
+    historyOption.value =
+        "";
+
+    historyOption.textContent =
+        "History";
+
+    historyOption.className =
+        "placeholder-option";
+
+
+    select.appendChild(
+        historyOption
+    );
+
+
+    select.classList.add(
+        "placeholder"
+    );
+
+
+    const months = [
+
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre"
+
+    ];
+
+
+    data.days.forEach(
+        date => {
+
+            if (date === "NOW") {
+
+                return;
+
+            }
+
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                date;
+
+
+            const [
+                year,
+                month,
+                day
+            ] = date.split("-");
+
+
+            option.textContent =
+                `${day} ${months[parseInt(month, 10) - 1]} ${year.slice(2)}`;
+
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    if (
+        preserveSelection &&
+        previousValue &&
+        Array.from(select.options).some(
+            option => option.value === previousValue
+        )
+    ) {
+        select.value = previousValue;
+        select.classList.remove(
+            "placeholder"
+        );
+    } else {
+        select.value = "";
+    }
+
+}
+
+
+// ============================================================
+// HISTORY
+// ============================================================
+
+async function loadHistory() {
+
+    const select =
+        document.getElementById(
+            "day"
+        );
+
+
+    const date =
+        select.value;
+
+
+    if (!date) {
+
+        showNow();
+
+        return;
+
+    }
+
+
+    select.classList.remove(
+        "placeholder"
+    );
+
+
+    currentView =
+        "history";
+
+
+    updateSaveLogsButton();
+
+
+    document
+        .getElementById(
+            "nowButton"
+        )
+        .classList.remove(
+            "active"
+        );
+
+
+    document
+        .getElementById(
+            "tradeDay"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "tradeDay"
+        )
+        .classList.add(
+            "placeholder"
+        );
+
+
+    const mode =
+        getMode();
+
+
+    const response =
+        await fetch(
+            "/api/history?mode="
+            + mode
+            + "&date="
+            + encodeURIComponent(
+                date
+            )
+        );
+
+
+    const data =
+        await response.json();
+
+
+    const logs =
+        document.getElementById(
+            "logs"
+        );
+
+
+    logs.innerHTML =
+        data.log;
+
+
+    logs.scrollTop =
+        0;
+
+}
+
+
+// ============================================================
+// TRADE DAYS
+// ============================================================
+
+async function loadTradeDays(
+    preserveSelection = false
+) {
+
+    const select =
+        document.getElementById(
+            "tradeDay"
+        );
+
+    const previousValue =
+        preserveSelection
+            ? select.value
+            : "";
+
+    const mode =
+        getMode();
+
+
+    const response =
+        await fetch(
+            "/api/trade-days?mode="
+            + mode
+        );
+
+
+    const data =
+        await response.json();
+
+
+    select.innerHTML =
+        "";
+
+
+    const tradesOption =
+        document.createElement(
+            "option"
+        );
+
+
+    tradesOption.value =
+        "";
+
+    tradesOption.textContent =
+        "Trades";
+
+    tradesOption.className =
+        "placeholder-option";
+
+
+    select.appendChild(
+        tradesOption
+    );
+
+
+    select.classList.add(
+        "placeholder"
+    );
+
+
+    const months = [
+
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre"
+
+    ];
+
+
+    data.days.forEach(
+        date => {
+
+            if (date === "NOW") {
+
+                return;
+
+            }
+
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                date;
+
+
+            const [
+                year,
+                month,
+                day
+            ] = date.split("-");
+
+
+            option.textContent =
+                `${day} ${months[parseInt(month, 10) - 1]} ${year.slice(2)}`;
+
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    if (
+        preserveSelection &&
+        previousValue &&
+        Array.from(select.options).some(
+            option => option.value === previousValue
+        )
+    ) {
+        select.value = previousValue;
+        select.classList.remove(
+            "placeholder"
+        );
+    } else {
+        select.value = "";
+    }
+
+}
+
+
+// ============================================================
+// TRADES
+// ============================================================
+
+async function loadTrades() {
+
+    const select =
+        document.getElementById(
+            "tradeDay"
+        );
+
+
+    const date =
+        select.value;
+
+
+    if (!date) {
+
+        showNow();
+
+        return;
+
+    }
+
+
+    select.classList.remove(
+        "placeholder"
+    );
+
+
+    currentView =
+        "trades";
+
+
+    updateSaveLogsButton();
+
+
+    document
+        .getElementById(
+            "nowButton"
+        )
+        .classList.remove(
+            "active"
+        );
+
+
+    document
+        .getElementById(
+            "day"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "day"
+        )
+        .classList.add(
+            "placeholder"
+        );
+
+
+    const mode =
+        getMode();
+
+
+    const response =
+        await fetch(
+            "/api/trades?mode="
+            + mode
+            + "&date="
+            + encodeURIComponent(
+                date
+            )
+        );
+
+
+    const data =
+        await response.json();
+
+
+    const logs =
+        document.getElementById(
+            "logs"
+        );
+
+
+    logs.innerHTML =
+        data.log;
+
+
+    logs.scrollTop =
+        0;
+
+}
+
+
+// ============================================================
+// GO TO BOTTOM
+// ============================================================
+
+function goToBottom() {
+
+    const logs =
+        document.getElementById(
+            "logs"
+        );
+
+
+    logs.scrollTop =
+        logs.scrollHeight;
+
+
+    autoScrollNow = true;
+
+}
+
+
+// ============================================================
+// INIT
+// ============================================================
+
+async function init() {
+
+    updateModeUI();
+
+    await updateStatus();
+
+    await loadDays();
+
+    await loadTradeDays();
+
+    await showNow();
+
+}
+
+
+init();
+
+
+// ============================================================
+// LIVE REFRESH
+// ============================================================
+
+setInterval(
+    async () => {
+
+        await updateStatus();
+
+        // Refresh the archived History/Trades selectors so files
+        // created automatically by the bot appear without a page
+        // refresh or pressing STOP. Keep the current selection.
+        const selectedHistory =
+            document.getElementById(
+                "day"
+            ).value;
+
+        const selectedTrades =
+            document.getElementById(
+                "tradeDay"
+            ).value;
+
+        await loadDays(true);
+        await loadTradeDays(true);
+
+        // If the user is viewing an archived day, refresh its
+        // contents too, because a new automatic save may have
+        // appended more data to that same day's file.
+        if (
+            currentView === "history" &&
+            selectedHistory
+        ) {
+            document.getElementById(
+                "day"
+            ).value = selectedHistory;
+            await loadHistory();
+        } else if (
+            currentView === "trades" &&
+            selectedTrades
+        ) {
+            document.getElementById(
+                "tradeDay"
+            ).value = selectedTrades;
+            await loadTrades();
+        }
+
+
+        if (
+            currentView === "now"
+        ) {
+
+            const status =
+                document.getElementById(
+                    "status"
+                );
+
+
+            if (
+                status.classList.contains(
+                    "running"
+                )
+            ) {
+
+                await loadCurrentLog();
+
+            }
+
+        }
+
+    },
+    2000
+);
+
+
+</script>
+
+</body>
+
+</html>

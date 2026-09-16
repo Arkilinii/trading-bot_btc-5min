@@ -1,7 +1,5 @@
 import logging
-import os
 from dataclasses import dataclass
-from datetime import datetime, timezone
 
 
 log = logging.getLogger(__name__)
@@ -51,144 +49,9 @@ class Strategy:
         self.hedge_price = None
 
         # True = ya se ha cerrado la operación de esta ronda.
-        # Mientras sea True, el paper loop NO debe volver a consultar
+        # Mientras sea True, el loop NO debe volver a consultar
         # Polymarket hasta que empiece una nueva ronda.
         self.round_finished = False
-
-        self._ensure_csv()
-
-    # =============================================================
-    # TRADE LOG
-    # =============================================================
-
-    def _trade_file(self):
-
-        return (
-            "data/paper_trades.csv"
-            if self.paper
-            else "data/live_trades.csv"
-        )
-
-    def _ensure_csv(self):
-
-        os.makedirs(
-            "data",
-            exist_ok=True,
-        )
-
-        path = self._trade_file()
-
-        if not os.path.exists(path):
-
-            with open(
-                path,
-                "w",
-                encoding="utf-8",
-            ) as f:
-
-                f.write(
-                    "TRADE LOG\n"
-                )
-
-    def _log_trade(
-        self,
-        event,
-        direction="",
-        move="",
-        price="",
-        shares="",
-        usdc="",
-        result="",
-        result_usd="",
-        reason="",
-    ):
-
-        os.makedirs(
-            "data",
-            exist_ok=True,
-        )
-
-        timestamp = datetime.now(
-            timezone.utc
-        ).isoformat()
-
-        if move != "":
-
-            try:
-                move_text = f"{float(move):+.2f}"
-            except (TypeError, ValueError):
-                move_text = str(move)
-
-        else:
-            move_text = "-"
-
-        if price != "":
-
-            try:
-                price_text = f"{float(price):.4f}"
-            except (TypeError, ValueError):
-                price_text = str(price)
-
-        else:
-            price_text = "-"
-
-        if shares != "":
-
-            try:
-                shares_text = f"{float(shares):.4f}"
-            except (TypeError, ValueError):
-                shares_text = str(shares)
-
-        else:
-            shares_text = "-"
-
-        if usdc != "":
-
-            try:
-                usdc_text = f"${float(usdc):.2f}"
-            except (TypeError, ValueError):
-                usdc_text = str(usdc)
-
-        else:
-            usdc_text = "-"
-
-        if result and result_usd != "":
-
-            try:
-                pnl_text = (
-                    f"{result} "
-                    f"{float(result_usd):+.2f} USD"
-                )
-            except (TypeError, ValueError):
-                pnl_text = (
-                    f"{result} "
-                    f"{result_usd}"
-                )
-
-        else:
-
-            pnl_text = "-"
-
-        line = (
-            f"timestamp: {timestamp} | "
-            f"round: {self.round_id} | "
-            f"event: {event} | "
-            f"direction: {direction or '-'} | "
-            f"move: {move_text} | "
-            f"price: {price_text} | "
-            f"shares: {shares_text} | "
-            f"stake/value: {usdc_text} | "
-            f"P&L: {pnl_text} | "
-            f"reason: {reason or '-'}"
-        )
-
-        with open(
-            self._trade_file(),
-            "a",
-            encoding="utf-8",
-        ) as f:
-
-            f.write(line + "\n")
 
     # =============================================================
     # ROUND RESET
@@ -221,14 +84,6 @@ class Strategy:
         self.hedge_shares = 0.0
         self.hedge_token = None
         self.hedge_price = None
-
-        log.info(
-            BOLD
-            + "ROUND %s | BTC: $%.2f"
-            + RESET,
-            round_id,
-            price,
-        )
 
     # =============================================================
     # STRATEGY
@@ -405,7 +260,7 @@ class Strategy:
                 token
             )
 
-        except Exception as exc:
+        except Exception:
 
             # Un order book sin asks NO debe romper el loop.
             # Simplemente esperamos al siguiente ciclo.
@@ -475,22 +330,6 @@ class Strategy:
         self.position_shares = shares
         self.entry_price = price
 
-        self._log_trade(
-            (
-                "PAPER_ENTRY"
-                if self.paper
-                else "LIVE_ENTRY"
-            ),
-            self.position_direction,
-            move,
-            price,
-            shares,
-            usdc,
-            "",
-            "",
-            "momentum entry",
-        )
-
     # =============================================================
     # PARTIAL HEDGE
     # =============================================================
@@ -538,27 +377,6 @@ class Strategy:
         self.hedge_token = opposite_token
         self.hedge_price = opposite_price
 
-        hedge_usdc = (
-            shares
-            * opposite_price
-        )
-
-        self._log_trade(
-            (
-                "PAPER_HEDGE"
-                if self.paper
-                else "LIVE_HEDGE"
-            ),
-            self.position_direction,
-            btc_move,
-            opposite_price,
-            shares,
-            hedge_usdc,
-            "",
-            "",
-            "market extreme; bought small opposite position",
-        )
-
         return shares
 
     # =============================================================
@@ -593,22 +411,6 @@ class Strategy:
             "WIN"
             if result_usd >= 0
             else "LOSS"
-        )
-
-        self._log_trade(
-            (
-                "PAPER_EXIT"
-                if self.paper
-                else "LIVE_EXIT"
-            ),
-            direction,
-            move,
-            price,
-            shares,
-            usdc,
-            result,
-            result_usd,
-            reason,
         )
 
         # =========================================================

@@ -8,87 +8,99 @@ from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parents[1]
 ENV_FILE = ROOT / "keys" / ".env"
 
-# -------------------------------------------------------------
-# LOAD ENV
-# -------------------------------------------------------------
-
 if ENV_FILE.exists():
     load_dotenv(ENV_FILE)
 
+try:
+    import configuration
+except ImportError:
+    configuration = None
+
+
+def _configured(name, env_name=None, default=None):
+    """Configuration.py takes priority when its value is defined."""
+    if configuration is not None and hasattr(configuration, name):
+        value = getattr(configuration, name)
+        if value is not None and str(value).strip().lower() != "undefined":
+            return value
+
+    if env_name is None:
+        env_name = name
+
+    value = os.getenv(env_name)
+    if value is not None and value.strip().lower() != "undefined":
+        return value
+
+    return default
+
 
 def env_float(name, default):
-    return float(os.getenv(name, default))
+    value = _configured(name, name, default)
+    return float(value)
 
 
 def env_int(name, default):
-    return int(os.getenv(name, default))
+    value = _configured(name, name, default)
+    return int(value)
 
 
 def env_bool(name, default=False):
-    value = os.getenv(name)
-
+    value = _configured(name, name, None)
     if value is None:
         return default
-
-    return value.strip().lower() in (
-        "1",
-        "true",
-        "yes",
-        "on",
-    )
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in ("1", "true", "yes", "on")
 
 
-# -------------------------------------------------------------
-# MODE
-# -------------------------------------------------------------
-# PAPER is the default.
-#
-# LIVE is enabled only when:
-# - keys/.env exists
-# - private key exists
-# - API key exists
-# - API secret exists
-# - API passphrase exists
-#
-# This prevents accidentally sending real orders.
-# -------------------------------------------------------------
+def credential(config_name, env_name):
+    value = _configured(config_name, env_name, "")
+    if value is None:
+        return ""
+    value = str(value).strip()
+    return "" if value.lower() == "undefined" else value
+
 
 ENV_FILE_EXISTS = ENV_FILE.exists()
 
-LIVE_CREDENTIALS_COMPLETE = (
-    bool(os.getenv("POLY_PRIVATE_KEY"))
-    and bool(os.getenv("POLY_API_KEY"))
-    and bool(os.getenv("POLY_API_SECRET"))
-    and bool(os.getenv("POLY_API_PASSPHRASE"))
+POLY_PRIVATE_KEY = credential("POLY_PRIVATE_KEY", "POLY_PRIVATE_KEY")
+POLY_API_KEY = credential("POLY_API_KEY", "POLY_API_KEY")
+POLY_API_SECRET = credential("POLY_API_SECRET", "POLY_API_SECRET")
+POLY_API_PASSPHRASE = credential("POLY_API_PASSPHRASE", "POLY_API_PASSPHRASE")
+POLY_FUNDER = credential("POLY_FUNDER", "POLY_FUNDER")
+
+LIVE_CREDENTIALS_COMPLETE = all(
+    (
+        POLY_PRIVATE_KEY,
+        POLY_API_KEY,
+        POLY_API_SECRET,
+        POLY_API_PASSPHRASE,
+        POLY_FUNDER,
+    )
 )
 
-LIVE_MODE = (
-    ENV_FILE_EXISTS
-    and LIVE_CREDENTIALS_COMPLETE
-)
+LIVE_MODE = LIVE_CREDENTIALS_COMPLETE
 
 
 @dataclass(frozen=True)
 class Config:
 
-    # =========================================================
-    # MODE
-    # =========================================================
-
     live_mode: bool = LIVE_MODE
 
-    # =========================================================
-    # POLYMARKET
-    # =========================================================
-
-    poly_clob_url: str = os.getenv(
-        "POLY_CLOB_URL",
-        "https://clob.polymarket.com",
+    poly_clob_url: str = str(
+        _configured(
+            "POLY_CLOB_URL",
+            "POLY_CLOB_URL",
+            "https://clob.polymarket.com",
+        )
     )
 
-    poly_gamma_url: str = os.getenv(
-        "POLY_GAMMA_URL",
-        "https://gamma-api.polymarket.com",
+    poly_gamma_url: str = str(
+        _configured(
+            "POLY_GAMMA_URL",
+            "POLY_GAMMA_URL",
+            "https://gamma-api.polymarket.com",
+        )
     )
 
     poly_chain_id: int = env_int(
@@ -96,71 +108,43 @@ class Config:
         137,
     )
 
-    poly_private_key: str = os.getenv(
-        "POLY_PRIVATE_KEY",
-        "",
-    )
-
-    poly_api_key: str = os.getenv(
-        "POLY_API_KEY",
-        "",
-    )
-
-    poly_api_secret: str = os.getenv(
-        "POLY_API_SECRET",
-        "",
-    )
-
-    poly_api_passphrase: str = os.getenv(
-        "POLY_API_PASSPHRASE",
-        "",
-    )
+    poly_private_key: str = POLY_PRIVATE_KEY
+    poly_api_key: str = POLY_API_KEY
+    poly_api_secret: str = POLY_API_SECRET
+    poly_api_passphrase: str = POLY_API_PASSPHRASE
 
     poly_signature_type: int = env_int(
         "POLY_SIGNATURE_TYPE",
         0,
     )
 
-    poly_funder: str = os.getenv(
-        "POLY_FUNDER",
-        "",
-    )
-
-    # =========================================================
-    # PAPER ACCOUNT
-    # =========================================================
+    poly_funder: str = POLY_FUNDER
 
     paper_starting_balance: float = env_float(
         "PAPER_STARTING_BALANCE",
         500.00,
     )
 
-    # =========================================================
-    # TRADE SIZE
-    # =========================================================
-
     trade_usdc: float = env_float(
         "TRADE_USDC",
         200.00,
     )
 
-    # =========================================================
-    # BINANCE
-    # =========================================================
-
-    binance_symbol: str = os.getenv(
-        "BINANCE_SYMBOL",
-        "BTCUSDT",
+    binance_symbol: str = str(
+        _configured(
+            "BINANCE_SYMBOL",
+            "BINANCE_SYMBOL",
+            "BTCUSDT",
+        )
     )
 
-    binance_ws_url: str = os.getenv(
-        "BINANCE_WS_URL",
-        "wss://stream.binance.com:9443/ws/btcusdt@aggTrade",
+    binance_ws_url: str = str(
+        _configured(
+            "BINANCE_WS_URL",
+            "BINANCE_WS_URL",
+            "wss://stream.binance.com:9443/ws/btcusdt@aggTrade",
+        )
     )
-
-    # =========================================================
-    # STRATEGY
-    # =========================================================
 
     round_seconds: int = env_int(
         "ROUND_SECONDS",
