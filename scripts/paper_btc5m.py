@@ -173,6 +173,8 @@ BLUE = "\033[34m"
 ORANGE = "\033[38;5;208m"
 GREEN = "\033[32m"
 RED = "\033[31m"
+PURPLE = "\033[35m"
+PINK = "\033[95m"
 RESET = "\033[0m"
 BOLD = "\033[1m"
 ITALIC = "\033[3m"
@@ -294,6 +296,9 @@ async def main():
         return
 
     last_log = 0
+
+    # Last known position price used if the public book has no bids.
+    last_known_position_price = None
 
     # =========================================================
     # ROUND TRACKING
@@ -557,6 +562,8 @@ async def main():
                             shares,
                         )
 
+                        last_known_position_price = price
+
                         logging.info(
                             ORANGE
                             + BOLD
@@ -615,6 +622,8 @@ async def main():
                     # -------------------------------------------------
 
                     if current_price is not None:
+
+                        last_known_position_price = current_price
 
                         # =================================================
                         # EARLY EXIT >= 0.99
@@ -767,7 +776,9 @@ async def main():
                 # =================================================
                 # SAFETY EXIT
                 #
-                # Strategy devuelve EXIT cuando quedan <= 18s.
+                # If there is no public bid near round end, use the
+                # last known position price in PAPER so the position
+                # is still closed and accounted for.
                 # =================================================
 
                 elif (
@@ -775,46 +786,34 @@ async def main():
                     and strategy.entered
                 ):
 
-                    token = (
-                        strategy.position_token
-                    )
+                    token = strategy.position_token
+                    exit_direction = strategy.position_direction
+                    exit_shares = strategy.position_shares
 
                     try:
-
-                        final_price = (
-                            poly.best_bid(
-                                token
-                            )
-                        )
+                        final_price = poly.best_bid(token)
+                        used_fallback_price = False
 
                     except Exception as exc:
 
                         logging.warning(
-                            "(Paper) Exit price unavailable: %s",
+                            "(Paper) Exit bid unavailable: %s",
                             exc,
                         )
 
-                        final_price = None
+                        final_price = last_known_position_price
+                        used_fallback_price = True
 
-                    if (
-                        final_price is not None
-                        and final_price > 0
-                    ):
+                    if final_price is None or final_price <= 0:
+                        final_price = strategy.entry_price
+                        used_fallback_price = True
 
-                        exit_direction = (
-                            strategy.position_direction
-                        )
+                    if final_price is not None and final_price > 0:
 
-                        exit_shares = (
-                            strategy.position_shares
-                        )
-
-                        exit_result = (
-                            strategy.record_exit(
-                                decision.move,
-                                final_price,
-                                decision.reason,
-                            )
+                        exit_result = strategy.record_exit(
+                            decision.move,
+                            final_price,
+                            decision.reason,
                         )
 
                         if exit_result:
@@ -826,53 +825,50 @@ async def main():
                                 _,
                             ) = exit_result
 
-                            total_pnl += (
-                                result_usd
-                            )
-
-                            paper_balance += (
-                                result_usd
-                            )
+                            total_pnl += result_usd
+                            paper_balance += result_usd
 
                             if result == "WIN":
-
                                 wins += 1
-
                             else:
-
                                 losses += 1
 
-                            exit_color = (
-                                GREEN
-                                + BOLD
-                                if result_usd >= 0
-                                else RED
-                                + BOLD
-                            )
+                            if used_fallback_price:
+                                exit_color = (
+                                    PURPLE + BOLD
+                                    if result_usd >= 0
+                                    else PINK + BOLD
+                                )
+                                reason_text = (
+                                    "safety exit - last known price "
+                                    f"({decision.reason})"
+                                )
+                            else:
+                                exit_color = (
+                                    GREEN + BOLD
+                                    if result_usd >= 0
+                                    else RED + BOLD
+                                )
+                                reason_text = decision.reason
 
                             logging.info(
                                 exit_color
-                                + "(Paper) Exit %s $%+.2f (%.2f shares) |"
+                                + "(Paper) Exit %s $%+.2f (%.2f shares) | "
                                 "P&L: %s $%+.2f | "
                                 "Balance: $%.2f | "
                                 "Reason: %s"
                                 + RESET,
-
-                                exit_direction
-                                or "-",
-
+                                exit_direction or "-",
                                 decision.move,
-
                                 exit_shares,
-
                                 result,
-
                                 result_usd,
-
                                 paper_balance,
-
-                                decision.reason,
+                                reason_text,
                             )
+
+                            last_known_position_price = None
+
 
             except Exception as exc:
 

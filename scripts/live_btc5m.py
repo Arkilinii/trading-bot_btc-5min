@@ -130,6 +130,8 @@ BLUE = "\033[34m"
 ORANGE = "\033[38;5;208m"
 GREEN = "\033[32m"
 RED = "\033[31m"
+PURPLE = "\033[35m"
+PINK = "\033[95m"
 RESET = "\033[0m"
 BOLD = "\033[1m"
 ITALIC = "\033[3m"
@@ -333,6 +335,9 @@ async def main():
             )
 
     last_log = 0
+
+    # Last known position price used as an emergency reference.
+    last_known_position_price = None
     last_round_logged = None
     completed_rounds = 0
 
@@ -568,6 +573,8 @@ async def main():
                                 shares,
                             )
 
+                            last_known_position_price = price
+
                             logging.info(
                                 ORANGE
                                 + BOLD
@@ -610,6 +617,8 @@ async def main():
                             shares,
                         )
 
+                        last_known_position_price = price
+
                         logging.info(
                             ORANGE
                             + BOLD
@@ -647,6 +656,8 @@ async def main():
                         current_price = None
 
                     if current_price is not None:
+
+                        last_known_position_price = current_price
 
                         # =================================================
                         # EARLY EXIT >= 0.99
@@ -836,6 +847,11 @@ async def main():
 
                 # =================================================
                 # SAFETY EXIT / ROUND END
+                #
+                # A missing public bid must not leave the position
+                # open indefinitely. In PAPER/fallback mode we close
+                # against the last known price. In REAL mode the real
+                # sell order must still succeed.
                 # =================================================
 
                 elif (
@@ -844,26 +860,32 @@ async def main():
                 ):
 
                     token = strategy.position_token
+                    exit_direction = strategy.position_direction
+                    exit_shares = strategy.position_shares
 
                     try:
                         final_price = poly.best_bid(token)
+                        used_fallback_price = False
+
                     except Exception as exc:
 
                         logging.warning(
-                            "(Live) Exit price unavailable: %s",
+                            "(Live) Exit bid unavailable: %s",
                             exc,
                         )
-                        final_price = None
+
+                        final_price = last_known_position_price
+                        used_fallback_price = True
+
+                    if final_price is None or final_price <= 0:
+                        final_price = strategy.entry_price
+                        used_fallback_price = True
 
                     if final_price is not None and final_price > 0:
-
-                        exit_direction = strategy.position_direction
-                        exit_shares = strategy.position_shares
 
                         if real_mode:
 
                             try:
-
                                 response = poly.sell(
                                     token,
                                     exit_shares,
@@ -874,7 +896,8 @@ async def main():
                                 logging.error(
                                     RED
                                     + BOLD
-                                    + "(Live) Exit operation failed | Operation not performed correctly: %s"
+                                    + "(Live) Exit operation failed | "
+                                    "Operation not performed correctly: %s"
                                     + RESET,
                                     exc,
                                 )
@@ -896,7 +919,6 @@ async def main():
                             result, result_usd, _, _ = exit_result
 
                             total_pnl += result_usd
-
                             if result == "WIN":
                                 wins += 1
                             else:
@@ -905,11 +927,23 @@ async def main():
                             if not real_mode:
                                 paper_balance += result_usd
 
-                            exit_color = (
-                                GREEN + BOLD
-                                if result_usd >= 0
-                                else RED + BOLD
-                            )
+                            if used_fallback_price:
+                                exit_color = (
+                                    PURPLE + BOLD
+                                    if result_usd >= 0
+                                    else PINK + BOLD
+                                )
+                                reason_text = (
+                                    "safety exit - last known price "
+                                    f"({decision.reason})"
+                                )
+                            else:
+                                exit_color = (
+                                    GREEN + BOLD
+                                    if result_usd >= 0
+                                    else RED + BOLD
+                                )
+                                reason_text = decision.reason
 
                             balance_text = (
                                 f"Balance: ${paper_balance:.2f} | "
@@ -929,7 +963,7 @@ async def main():
                                 exit_shares,
                                 result,
                                 result_usd,
-                                decision.reason,
+                                reason_text,
                             )
 
                             if real_mode:
@@ -937,6 +971,9 @@ async def main():
                                     "(Live) Exit response: %s",
                                     response,
                                 )
+
+                            last_known_position_price = None
+
 
             except Exception as exc:
 

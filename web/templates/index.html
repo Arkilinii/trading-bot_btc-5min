@@ -720,7 +720,7 @@ button:disabled {
 
     padding: 15px;
 
-    height: 700px;
+    height: calc(100vh - 360px);
 
     overflow-y: auto;
 
@@ -735,50 +735,6 @@ button:disabled {
     font-size: 13px;
 
     line-height: 1.45;
-}
-
-
-/* ========================================================= */
-/* SAVE LOGS */
-/* ========================================================= */
-
-#saveLogs {
-
-    position: absolute;
-
-    top: 8px;
-
-    right: 8px;
-
-    padding: 5px 12px;
-
-    background: #292929;
-
-    color: #ffffff;
-
-    border: 1px solid #444;
-
-    border-radius: 6px;
-
-    font-family: Cambria, Georgia, serif;
-
-    font-size: 12px;
-
-    cursor: pointer;
-
-    z-index: 2;
-}
-
-#saveLogs:hover {
-
-    background: #3a3a3a;
-}
-
-#saveLogs:disabled {
-
-    opacity: 0.35;
-
-    cursor: not-allowed;
 }
 
 
@@ -1023,20 +979,6 @@ Trades
 Cargando...
 </pre>
 
-
-<!-- ================================================= -->
-<!-- SAVE LOGS -->
-<!-- ================================================= -->
-
-<button
-    id="saveLogs"
-    onclick="saveLogs()"
-    disabled>
-
-Save logs
-
-</button>
-
 </div>
 
 
@@ -1127,11 +1069,6 @@ let lastNowLog = "";
 let autoScrollNow = true;
 
 
-// ============================================================
-// ESTADO DEL SAVE LOGS
-// ============================================================
-
-let nowSaved = false;
 
 
 
@@ -1362,82 +1299,6 @@ function getMode() {
 }
 
 
-// ============================================================
-// ACTUALIZAR ESTADO DEL BOTÓN SAVE LOGS
-// ============================================================
-
-function updateSaveLogsButton() {
-
-    const button =
-        document.getElementById(
-            "saveLogs"
-        );
-
-
-    // ========================================================
-    // SAVE LOGS SOLO EXISTE VISUALMENTE EN NOW
-    // ========================================================
-
-    if (currentView !== "now") {
-
-        button.style.display =
-            "none";
-
-        return;
-
-    }
-
-
-    button.style.display =
-        "block";
-
-
-    const status =
-        document.getElementById(
-            "status"
-        );
-
-
-    // ========================================================
-    // RUNNING = DESHABILITADO
-    // ========================================================
-
-    if (
-        status.classList.contains(
-            "running"
-        )
-    ) {
-
-        button.disabled =
-            true;
-
-        return;
-
-    }
-
-
-    // ========================================================
-    // SI YA SE GUARDÓ = DESHABILITADO
-    // ========================================================
-
-    if (nowSaved) {
-
-        button.disabled =
-            true;
-
-        return;
-
-    }
-
-
-    // ========================================================
-    // STOPPED + NOW PENDIENTE = HABILITADO
-    // ========================================================
-
-    button.disabled =
-        false;
-
-}
 
 
 // ============================================================
@@ -1477,7 +1338,6 @@ function toggleMode() {
 
     autoScrollNow = true;
 
-    nowSaved = false;
 
 
     updateModeUI();
@@ -1642,10 +1502,6 @@ async function updateStatus() {
             false;
 
     }
-
-
-    updateSaveLogsButton();
-
 }
 
 
@@ -1688,21 +1544,7 @@ async function startBot() {
     lastNowLog = "";
 
     autoScrollNow = true;
-
-    nowSaved = false;
-
-
-    const saveLogsButton =
-        document.getElementById(
-            "saveLogs"
-        );
-
-
-    saveLogsButton.disabled =
-        true;
-
-
-    const logs =
+const logs =
         document.getElementById(
             "logs"
         );
@@ -1849,10 +1691,6 @@ async function stopBot() {
     // NUEVO LOG DISPONIBLE PARA GUARDAR
     // ========================================================
 
-    nowSaved =
-        false;
-
-
     const logs =
         document.getElementById(
             "logs"
@@ -1876,221 +1714,6 @@ async function stopBot() {
     await loadTradeDays();
 
     await updateStatus();
-
-}
-
-
-// ============================================================
-// SAVE LOGS
-// ============================================================
-
-async function saveLogs() {
-
-    const status =
-        document.getElementById(
-            "status"
-        );
-
-
-    // ========================================================
-    // SOLO NOW
-    // ========================================================
-
-    if (currentView !== "now") {
-
-        return;
-
-    }
-
-
-    // ========================================================
-    // SOLO STOPPED
-    // ========================================================
-
-    if (
-        status.classList.contains(
-            "running"
-        )
-    ) {
-
-        return;
-
-    }
-
-
-    // ========================================================
-    // EVITAR GUARDAR DOS VECES
-    // ========================================================
-
-    if (nowSaved) {
-
-        return;
-
-    }
-
-
-    // ========================================================
-    // IMPORTANTE:
-    // MARCAR COMO GUARDADO INMEDIATAMENTE
-    //
-    // Así el botón NO vuelve a habilitarse durante
-    // las actualizaciones de estado ni mientras se
-    // ejecuta la petición.
-    //
-    // Solo START vuelve a poner nowSaved = false.
-    // ========================================================
-
-    nowSaved =
-        true;
-
-
-    const saveButton =
-        document.getElementById(
-            "saveLogs"
-        );
-
-
-    const logs =
-        document.getElementById(
-            "logs"
-        );
-
-
-    saveButton.disabled =
-        true;
-
-
-    const response =
-        await fetch(
-            "/api/save-now",
-            {
-                method: "POST",
-
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body: JSON.stringify(
-                    {
-                        mode: getMode()
-                    }
-                )
-            }
-        );
-
-
-    const data =
-        await response.json();
-
-
-    if (!data.success) {
-
-        alert(
-            data.error
-            || "No se pudieron guardar los logs."
-        );
-
-
-        // ====================================================
-        // SOLO EN CASO DE ERROR REAL
-        // PERMITIMOS REINTENTAR
-        // ====================================================
-
-        nowSaved =
-            false;
-
-        updateSaveLogsButton();
-
-        return;
-
-    }
-
-
-    // ========================================================
-    // BORRAR NOW
-    // ========================================================
-
-    lastNowLog =
-        "";
-
-    logs.innerHTML =
-        "";
-
-
-    autoScrollNow =
-        true;
-
-
-    logs.scrollTop =
-        0;
-
-
-    // ========================================================
-    // ACTUALIZAR HISTORY / TRADES
-    // ========================================================
-
-    await loadDays();
-
-    await loadTradeDays();
-
-
-    // ========================================================
-    // ASEGURAR NOW
-    // ========================================================
-
-    currentView =
-        "now";
-
-
-    document
-        .getElementById(
-            "nowButton"
-        )
-        .classList.add(
-            "active"
-        );
-
-
-    document
-        .getElementById(
-            "day"
-        )
-        .value = "";
-
-    document
-        .getElementById(
-            "tradeDay"
-        )
-        .value = "";
-
-
-    document
-        .getElementById(
-            "day"
-        )
-        .classList.add(
-            "placeholder"
-        );
-
-    document
-        .getElementById(
-            "tradeDay"
-        )
-        .classList.add(
-            "placeholder"
-        );
-
-
-    // ========================================================
-    // PERMANECE DESHABILITADO
-    //
-    // No se pone nowSaved = false aquí.
-    // Solo START lo reseteará.
-    // ========================================================
-
-    saveButton.disabled =
-        true;
 
 }
 
@@ -2164,18 +1787,12 @@ async function showNow() {
 
         logs.scrollTop =
             logs.scrollHeight;
-
-        updateSaveLogsButton();
-
-        return;
+return;
 
     }
 
 
     await loadCurrentLog();
-
-    updateSaveLogsButton();
-
 }
 
 
@@ -2428,7 +2045,7 @@ async function loadDays(
 // HISTORY
 // ============================================================
 
-async function loadHistory() {
+async function loadHistory(preserveScroll = false) {
 
     const select =
         document.getElementById(
@@ -2456,12 +2073,7 @@ async function loadHistory() {
 
     currentView =
         "history";
-
-
-    updateSaveLogsButton();
-
-
-    document
+document
         .getElementById(
             "nowButton"
         )
@@ -2511,12 +2123,21 @@ async function loadHistory() {
         );
 
 
+    // Capturar la posición DESPUÉS del fetch para respetar cualquier
+    // movimiento de scroll que el usuario haya hecho mientras cargaban
+    // los datos.
+    const previousScrollTop =
+        preserveScroll
+            ? logs.scrollTop
+            : 0;
+
+
     logs.innerHTML =
         data.log;
 
 
     logs.scrollTop =
-        0;
+        previousScrollTop;
 
 }
 
@@ -2663,7 +2284,7 @@ async function loadTradeDays(
 // TRADES
 // ============================================================
 
-async function loadTrades() {
+async function loadTrades(preserveScroll = false) {
 
     const select =
         document.getElementById(
@@ -2691,12 +2312,7 @@ async function loadTrades() {
 
     currentView =
         "trades";
-
-
-    updateSaveLogsButton();
-
-
-    document
+document
         .getElementById(
             "nowButton"
         )
@@ -2746,12 +2362,21 @@ async function loadTrades() {
         );
 
 
+    // Capturar la posición DESPUÉS del fetch para respetar cualquier
+    // movimiento de scroll que el usuario haya hecho mientras cargaban
+    // los datos.
+    const previousScrollTop =
+        preserveScroll
+            ? logs.scrollTop
+            : 0;
+
+
     logs.innerHTML =
         data.log;
 
 
     logs.scrollTop =
-        0;
+        previousScrollTop;
 
 }
 
@@ -2834,7 +2459,7 @@ setInterval(
             document.getElementById(
                 "day"
             ).value = selectedHistory;
-            await loadHistory();
+            await loadHistory(true);
         } else if (
             currentView === "trades" &&
             selectedTrades
@@ -2842,7 +2467,7 @@ setInterval(
             document.getElementById(
                 "tradeDay"
             ).value = selectedTrades;
-            await loadTrades();
+            await loadTrades(true);
         }
 
 

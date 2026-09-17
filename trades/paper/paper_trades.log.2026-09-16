@@ -1,0 +1,236 @@
+
+████████╗██████╗  █████╗ ██████╗ ██╗███╗   ██╗ ██████╗     ██████╗  ██████╗ ████████╗
+╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗██║████╗  ██║██╔════╝     ██╔══██╗██╔═══██╗╚══██╔══╝
+   ██║   ██████╔╝███████║██║  ██║██║██╔██╗ ██║██║  ███╗    ██████╔╝██║   ██║   ██║   
+   ██║   ██╔══██╗██╔══██║██║  ██║██║██║╚██╗██║██║   ██║    ██╔══██╗██║   ██║   ██║   
+   ██║   ██║  ██║██║  ██║██████╔╝██║██║ ╚████║╚██████╔╝    ██████╔╝╚██████╔╝   ██║   
+   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝     ╚═════╝  ╚═════╝    ╚═╝   
+
+                              by Arkilinux
+
+2026-09-16 18:40:40,603 | [1mNew 5m round 1789576800 started | BTC: $75704.01[0m
+
+2026-09-16 18:57:50,642 | [1mNew 5m round 1789577700 started | BTC: $75779.23[0m
+
+2026-09-16 18:58:33,677 | [1mNew 5m round 1789577700 started | BTC: $75766.00[0m
+
+2026-09-16 19:03:14,173 | [1mNew 5m round 1789578000 started | BTC: $75746.18[0m
+
+2026-09-16 19:05:38,175 | [1mNew 5m round 1789578300 started | BTC: $75726.03[0m
+
+2026-09-16 19:10:00,763 | [1mNew 5m round 1789578600 started | BTC: $75680.01[0m
+
+2026-09-16 19:15:00,245 | [1mNew 5m round 1789578900 started | BTC: $75727.06[0m
+
+2026-09-16 19:20:00,021 | [1mNew 5m round 1789579200 started | BTC: $75742.01[0m
+2026-09-16 19:23:00,867 | [38;5;208m[1m(Paper) Entry Down $-88.00 | Range: 0.97 | Stake: $200.00 | Balance: $500.00 | Shares: 206.19[0m
+2026-09-16 19:23:01,994 | [34m[1m(Paper) Hedge Down | Main price: 0.96 | Opposite: Up | Opposite price: 0.04 | Shares: 20.62[0m
+2026-09-16 19:23:43,172 | [32m[1m(Paper) Exit Down $-70.00 (206.19 shares) | P&L: WIN $+5.15 | Balance: $505.15 | Reason: contract >= 0.99[0m
+
+2026-09-16 19:25:00,170 | [1mNew 5m round 1789579500 started | BTC: $75704.00[0m
+
+2026-09-16 19:30:00,745 | [1mNew 5m round 1789579800 started | BTC: $75715.36[0m
+
+2026-09-16 19:35:01,019 | [1mNew 5m round 1789580100 started | BTC: $75622.01[0m
+
+2026-09-16 19:42:50,019 | [1mNew 5m round 1789580400 started | BTC: $75420.66[0m
+
+2026-09-16 19:48:19,126 | [1mNew 5m round 1789580700 started | BTC: $75455.32[0m
+
+2026-09-16 19:50:01,239 | [1mNew 5m round 1789581000 started | BTC: $75370.93[0m
+2026-09-16 19:53:01,029 | [38;5;208m[1m(Paper) Entry Up $+84.18 | Range: 0.93 | Stake: $200.00 | Balance: $500.00 | Shares: 215.05[0m
+2026-09-16 19:53:04,762 | [34m[1m(Paper) Hedge Up | Main price: 0.95 | Opposite: Down | Opposite price: 0.05 | Shares: 21.51[0m
+2026-09-16 19:53:45,488 | [32m[1m(Paper) Exit Up $+99.34 (215.05 shares) | P&L: WIN $+13.98 | Balance: $513.98 | Reason: contract >= 0.99[0m
+
+2026-09-16 19:55:00,320 | [1mNew 5m round 1789581300 started | BTC: $75503.67[0m
+
+2026-09-16 20:00:00,857 | [1mNew 5m round 1789581600 started | BTC: $75767.60[0m
+2026-09-16 20:03:06,669 | [38;5;208m[1m(Paper) Entry Down $-88.98 | Range: 0.77 | Stake: $200.00 | Balance: $513.98 | Shares: 259.74[0m
+2026-09-16 20:04:42,886 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:44,018 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:45,108 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:46,251 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:47,334 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:48,484 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:49,587 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:50,737 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:51,838 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:53,019 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:54,127 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:55,287 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:56,368 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:57,509 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:58,600 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+2026-09-16 20:04:59,789 | (Paper) Exit price unavailable: No bids in public order book for token 51539850079418100849696517493408579040174536835456591729868651390185355306420
+
+2026-09-16 20:05:50,463 | [1mNew 5m round 1789581900 started | BTC: $76080.50[0m
+
+2026-09-16 20:10:00,064 | [1mNew 5m round 1789582200 started | BTC: $76272.01[0m
+
+2026-09-16 20:10:00,805 | [1mNew 5m round 1789582200 started | BTC: $76290.01[0m
+
+2026-09-16 20:10:00,805 | [1mNew 5m round 1789582200 started | BTC: $76290.01[0m
+
+2026-09-16 20:16:01,924 | [1mNew 5m round 1789582500 started | BTC: $75824.00[0m
+2026-09-16 20:18:09,578 | [38;5;208m[1m(Paper) Entry Up $+94.00 | Range: 0.76 | Stake: $200.00 | Balance: $500.00 | Shares: 263.16[0m
+2026-09-16 20:19:29,856 | [34m[1m(Paper) Hedge Up | Main price: 0.96 | Opposite: Down | Opposite price: 0.04 | Shares: 26.32[0m
+2026-09-16 20:19:34,667 | [32m[1m(Paper) Exit Up $+78.00 (263.16 shares) | P&L: WIN $+61.84 | Balance: $561.84 | Reason: contract >= 0.99[0m
+
+2026-09-16 20:20:00,973 | [1mNew 5m round 1789582800 started | BTC: $75959.36[0m
+2026-09-16 20:23:00,672 | [38;5;208m[1m(Paper) Entry Up $+84.04 | Range: 0.94 | Stake: $200.00 | Balance: $561.84 | Shares: 212.77[0m
+2026-09-16 20:23:23,749 | [34m[1m(Paper) Hedge Up | Main price: 0.95 | Opposite: Down | Opposite price: 0.05 | Shares: 21.28[0m
+2026-09-16 20:23:53,847 | [32m[1m(Paper) Exit Up $+88.15 (212.77 shares) | P&L: WIN $+11.70 | Balance: $573.54 | Reason: contract >= 0.99[0m
+
+2026-09-16 20:25:00,671 | [1mNew 5m round 1789583100 started | BTC: $75917.86[0m
+
+2026-09-16 20:30:00,039 | [1mNew 5m round 1789583400 started | BTC: $76003.68[0m
+
+2026-09-16 20:35:00,032 | [1mNew 5m round 1789583700 started | BTC: $75591.55[0m
+2026-09-16 20:38:04,111 | [38;5;208m[1m(Paper) Entry Down $-70.67 | Range: 0.78 | Stake: $200.00 | Balance: $573.54 | Shares: 256.41[0m
+2026-09-16 20:39:43,020 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+2026-09-16 20:39:44,190 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+2026-09-16 20:39:45,335 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+2026-09-16 20:39:46,482 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+2026-09-16 20:39:47,648 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+2026-09-16 20:39:48,823 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+2026-09-16 20:39:49,945 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+2026-09-16 20:39:51,089 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+2026-09-16 20:39:52,232 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+2026-09-16 20:39:53,395 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+2026-09-16 20:39:54,536 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+2026-09-16 20:39:55,707 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+2026-09-16 20:39:56,846 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+2026-09-16 20:39:58,243 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+2026-09-16 20:39:59,648 | (Paper) Exit price unavailable: No bids in public order book for token 80882062970906196910210556952404921709153968560048125903499911705372199700673
+
+2026-09-16 20:40:00,663 | [1mNew 5m round 1789584000 started | BTC: $75834.01[0m
+
+2026-09-16 20:45:00,884 | [1mNew 5m round 1789584300 started | BTC: $75962.01[0m
+2026-09-16 20:48:00,931 | [38;5;208m[1m(Paper) Entry Down $-77.61 | Range: 0.98 | Stake: $200.00 | Balance: $573.54 | Shares: 204.08[0m
+2026-09-16 20:48:02,163 | [34m[1m(Paper) Hedge Down | Main price: 0.97 | Opposite: Up | Opposite price: 0.03 | Shares: 20.41[0m
+2026-09-16 20:48:57,633 | [32m[1m(Paper) Exit Down $-66.95 (204.08 shares) | P&L: WIN $+3.06 | Balance: $576.61 | Reason: contract >= 0.99[0m
+
+2026-09-16 20:50:00,283 | [1mNew 5m round 1789584600 started | BTC: $75914.01[0m
+
+2026-09-16 20:55:00,833 | [1mNew 5m round 1789584900 started | BTC: $75539.27[0m
+2026-09-16 20:58:49,991 | [38;5;208m[1m(Paper) Entry Up $+90.74 | Range: 0.75 | Stake: $200.00 | Balance: $576.61 | Shares: 266.67[0m
+2026-09-16 20:58:54,888 | [34m[1m(Paper) Hedge Up | Main price: 0.96 | Opposite: Down | Opposite price: 0.04 | Shares: 26.67[0m
+2026-09-16 20:59:03,529 | [32m[1m(Paper) Exit Up $+177.38 (266.67 shares) | P&L: WIN $+65.33 | Balance: $641.94 | Reason: contract >= 0.99[0m
+
+2026-09-16 21:00:00,203 | [1mNew 5m round 1789585200 started | BTC: $75650.01[0m
+
+2026-09-16 21:05:00,393 | [1mNew 5m round 1789585500 started | BTC: $76028.01[0m
+
+2026-09-16 21:10:00,526 | [1mNew 5m round 1789585800 started | BTC: $75910.23[0m
+2026-09-16 21:13:02,946 | [38;5;208m[1m(Paper) Entry Down $-98.22 | Range: 0.96 | Stake: $200.00 | Balance: $641.94 | Shares: 208.33[0m
+2026-09-16 21:13:04,135 | [34m[1m(Paper) Hedge Down | Main price: 0.95 | Opposite: Up | Opposite price: 0.05 | Shares: 20.83[0m
+2026-09-16 21:13:35,544 | [32m[1m(Paper) Exit Down $-150.23 (208.33 shares) | P&L: WIN $+7.29 | Balance: $649.23 | Reason: contract >= 0.99[0m
+
+2026-09-16 21:17:51,497 | [1mNew 5m round 1789586100 started | BTC: $75808.01[0m
+
+2026-09-16 21:19:58,959 | [1mNew 5m round 1789586100 started | BTC: $75708.00[0m
+
+2026-09-16 21:25:44,695 | [1mNew 5m round 1789586700 started | BTC: $75368.63[0m
+
+2026-09-16 21:27:46,055 | [1mNew 5m round 1789586700 started | BTC: $75467.68[0m
+
+2026-09-16 21:29:02,392 | [1mNew 5m round 1789586700 started | BTC: $75394.45[0m
+
+2026-09-16 21:30:00,714 | [1mNew 5m round 1789587000 started | BTC: $75534.00[0m
+2026-09-16 21:33:28,884 | [38;5;208m[1m(Paper) Entry Up $+94.37 | Range: 0.99 | Stake: $200.00 | Balance: $500.00 | Shares: 202.02[0m
+2026-09-16 21:33:30,087 | [34m[1m(Paper) Hedge Up | Main price: 0.97 | Opposite: Down | Opposite price: 0.03 | Shares: 20.20[0m
+2026-09-16 21:33:45,330 | [32m[1m(Paper) Exit Up $+93.75 (202.02 shares) | P&L: WIN $+1.01 | Balance: $501.01 | Reason: contract >= 0.99[0m
+
+2026-09-16 21:35:00,313 | [1mNew 5m round 1789587300 started | BTC: $75798.57[0m
+
+2026-09-16 21:40:00,558 | [1mNew 5m round 1789587600 started | BTC: $75828.01[0m
+2026-09-16 21:43:09,027 | [38;5;208m[1m(Paper) Entry Up $+73.99 | Range: 0.92 | Stake: $200.00 | Balance: $501.01 | Shares: 217.39[0m
+2026-09-16 21:43:16,073 | [34m[1m(Paper) Hedge Up | Main price: 0.95 | Opposite: Down | Opposite price: 0.05 | Shares: 21.74[0m
+2026-09-16 21:43:37,161 | [32m[1m(Paper) Exit Up $+139.73 (217.39 shares) | P&L: WIN $+16.30 | Balance: $517.31 | Reason: contract >= 0.99[0m
+
+2026-09-16 21:45:00,178 | [1mNew 5m round 1789587900 started | BTC: $75986.01[0m
+
+2026-09-16 21:50:00,147 | [1mNew 5m round 1789588200 started | BTC: $76082.00[0m
+
+2026-09-16 21:55:00,109 | [1mNew 5m round 1789588500 started | BTC: $76071.73[0m
+
+2026-09-16 22:00:00,620 | [1mNew 5m round 1789588800 started | BTC: $76094.00[0m
+2026-09-16 22:03:00,826 | [38;5;208m[1m(Paper) Entry Up $+91.99 | Range: 0.96 | Stake: $200.00 | Balance: $517.31 | Shares: 208.33[0m
+2026-09-16 22:03:02,023 | [34m[1m(Paper) Hedge Up | Main price: 0.96 | Opposite: Down | Opposite price: 0.04 | Shares: 20.83[0m
+2026-09-16 22:03:31,786 | [32m[1m(Paper) Exit Up $+110.01 (208.33 shares) | P&L: WIN $+7.29 | Balance: $524.61 | Reason: contract >= 0.99[0m
+
+2026-09-16 22:05:00,921 | [1mNew 5m round 1789589100 started | BTC: $76268.00[0m
+2026-09-16 22:09:01,773 | [38;5;208m[1m(Paper) Entry Down $-72.00 | Range: 0.99 | Stake: $200.00 | Balance: $524.61 | Shares: 202.02[0m
+2026-09-16 22:09:03,068 | [34m[1m(Paper) Hedge Down | Main price: 0.98 | Opposite: Up | Opposite price: 0.02 | Shares: 20.20[0m
+2026-09-16 22:09:04,181 | [32m[1m(Paper) Exit Down $-81.42 (202.02 shares) | P&L: WIN $+1.01 | Balance: $525.62 | Reason: contract >= 0.99[0m
+
+2026-09-16 22:10:00,875 | [1mNew 5m round 1789589400 started | BTC: $76151.51[0m
+2026-09-16 22:13:41,997 | [38;5;208m[1m(Paper) Entry Up $+70.22 | Range: 0.87 | Stake: $200.00 | Balance: $525.62 | Shares: 229.89[0m
+2026-09-16 22:13:49,321 | [34m[1m(Paper) Hedge Up | Main price: 0.96 | Opposite: Down | Opposite price: 0.04 | Shares: 22.99[0m
+2026-09-16 22:14:25,776 | [32m[1m(Paper) Exit Up $+58.52 (229.89 shares) | P&L: WIN $+28.74 | Balance: $554.35 | Reason: contract >= 0.99[0m
+
+2026-09-16 22:15:00,210 | [1mNew 5m round 1789589700 started | BTC: $76210.04[0m
+2026-09-16 22:18:21,292 | [38;5;208m[1m(Paper) Entry Up $+77.96 | Range: 0.90 | Stake: $200.00 | Balance: $554.35 | Shares: 222.22[0m
+2026-09-16 22:18:43,205 | [34m[1m(Paper) Hedge Up | Main price: 0.96 | Opposite: Down | Opposite price: 0.04 | Shares: 22.22[0m
+2026-09-16 22:19:13,063 | [32m[1m(Paper) Exit Up $+59.97 (222.22 shares) | P&L: WIN $+21.11 | Balance: $575.46 | Reason: contract >= 0.99[0m
+
+2026-09-16 22:20:00,722 | [1mNew 5m round 1789590000 started | BTC: $76343.95[0m
+
+2026-09-16 22:25:00,349 | [1mNew 5m round 1789590300 started | BTC: $76268.01[0m
+
+2026-09-16 22:30:00,074 | [1mNew 5m round 1789590600 started | BTC: $76228.00[0m
+2026-09-16 22:33:00,660 | [38;5;208m[1m(Paper) Entry Down $-73.98 | Range: 0.83 | Stake: $200.00 | Balance: $575.46 | Shares: 240.96[0m
+2026-09-16 22:33:35,341 | [34m[1m(Paper) Hedge Down | Main price: 0.96 | Opposite: Up | Opposite price: 0.04 | Shares: 24.10[0m
+2026-09-16 22:34:42,934 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+2026-09-16 22:34:44,015 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+2026-09-16 22:34:45,195 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+2026-09-16 22:34:46,756 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+2026-09-16 22:34:47,923 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+2026-09-16 22:34:49,226 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+2026-09-16 22:34:50,355 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+2026-09-16 22:34:51,475 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+2026-09-16 22:34:52,667 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+2026-09-16 22:34:54,018 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+2026-09-16 22:34:55,428 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+2026-09-16 22:34:56,507 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+2026-09-16 22:34:57,658 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+2026-09-16 22:34:58,746 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+2026-09-16 22:34:59,893 | (Paper) Exit price unavailable: No bids in public order book for token 47165526474476176421276265181985271357094947583044946319019250022743780241798
+
+2026-09-16 22:35:00,913 | [1mNew 5m round 1789590900 started | BTC: $76240.36[0m
+2026-09-16 22:38:00,995 | [38;5;208m[1m(Paper) Entry Down $-96.35 | Range: 0.91 | Stake: $200.00 | Balance: $575.46 | Shares: 219.78[0m
+2026-09-16 22:38:19,552 | [34m[1m(Paper) Hedge Down | Main price: 0.96 | Opposite: Up | Opposite price: 0.04 | Shares: 21.98[0m
+2026-09-16 22:38:46,059 | [32m[1m(Paper) Exit Down $-106.36 (219.78 shares) | P&L: WIN $+18.68 | Balance: $594.14 | Reason: contract >= 0.99[0m
+
+2026-09-16 22:40:00,040 | [1mNew 5m round 1789591200 started | BTC: $76108.01[0m
+
+2026-09-16 22:45:00,606 | [1mNew 5m round 1789591500 started | BTC: $76112.01[0m
+
+2026-09-16 22:50:00,206 | [1mNew 5m round 1789591800 started | BTC: $76166.00[0m
+2026-09-16 22:53:08,264 | [38;5;208m[1m(Paper) Entry Down $-76.00 | Range: 0.98 | Stake: $200.00 | Balance: $594.14 | Shares: 204.08[0m
+2026-09-16 22:53:09,463 | [34m[1m(Paper) Hedge Down | Main price: 0.97 | Opposite: Up | Opposite price: 0.03 | Shares: 20.41[0m
+2026-09-16 22:53:52,796 | [32m[1m(Paper) Exit Down $-55.99 (204.08 shares) | P&L: WIN $+3.06 | Balance: $597.21 | Reason: contract >= 0.99[0m
+
+2026-09-16 22:55:00,670 | [1mNew 5m round 1789592100 started | BTC: $76140.00[0m
+
+2026-09-16 23:00:00,493 | [1mNew 5m round 1789592400 started | BTC: $76178.34[0m
+
+2026-09-16 23:05:00,129 | [1mNew 5m round 1789592700 started | BTC: $76154.00[0m
+
+2026-09-16 23:10:00,552 | [1mNew 5m round 1789593000 started | BTC: $76153.46[0m
+
+2026-09-16 23:15:00,900 | [1mNew 5m round 1789593300 started | BTC: $76116.00[0m
+
+2026-09-16 23:20:00,823 | [1mNew 5m round 1789593600 started | BTC: $76112.37[0m
+
+2026-09-16 23:25:01,026 | [1mNew 5m round 1789593900 started | BTC: $76075.95[0m
+
+2026-09-16 23:30:00,751 | [1mNew 5m round 1789594200 started | BTC: $76074.56[0m
+
+2026-09-16 23:35:01,050 | [1mNew 5m round 1789594500 started | BTC: $76064.01[0m
+
+2026-09-16 23:40:00,071 | [1mNew 5m round 1789594800 started | BTC: $75994.75[0m
+
+2026-09-16 23:45:00,946 | [1mNew 5m round 1789595100 started | BTC: $75960.13[0m
+
+2026-09-16 23:50:00,223 | [1mNew 5m round 1789595400 started | BTC: $75960.10[0m
