@@ -48,6 +48,12 @@ def _clear_current_file(
     current_file.write_text("", encoding="utf-8")
 
 
+# For clear=False archives, remember how much of each NOW file has already
+# been copied to History during the current bot process.  This lets NOW
+# remain intact while History receives only the newly generated log lines.
+_archived_lengths = {}
+
+
 TRADE_HEADER = (
     "\n"
     "████████╗██████╗  █████╗ ██████╗ ██╗███╗   ██╗ ██████╗     ██████╗  ██████╗ ████████╗\n"
@@ -68,10 +74,11 @@ def archive_log_file(
     header: str = "",
 ) -> None:
     """
-    Append the current NOW log to today's History file.
+    Append NOW to today's History.
 
-    If clear=True, NOW is emptied after the copy so the next
-    logging block starts from an empty file.
+    When clear=True, the whole current file is archived and NOW is emptied.
+    When clear=False, NOW is preserved and only the portion generated since
+    the previous clear=False archive call in this process is appended.
     """
     current_file = Path(current_file)
 
@@ -86,6 +93,22 @@ def archive_log_file(
     )
 
     if not content.strip():
+        return
+
+    key = str(current_file.resolve())
+    previous_length = _archived_lengths.get(key, 0)
+
+    # If NOW was externally truncated/recreated, restart from the beginning
+    # instead of slicing beyond the current content.
+    if previous_length > len(content):
+        previous_length = 0
+
+    if clear:
+        content_to_archive = content
+    else:
+        content_to_archive = content[previous_length:]
+
+    if not content_to_archive.strip():
         return
 
     today = datetime.now().strftime("%Y-%m-%d")
@@ -109,12 +132,15 @@ def archive_log_file(
             f.write("\n")
         elif header:
             f.write(header)
-        f.write(content)
-        if not content.endswith("\n"):
+        f.write(content_to_archive)
+        if not content_to_archive.endswith("\n"):
             f.write("\n")
 
     if clear:
         _clear_current_file(current_file)
+        _archived_lengths[key] = 0
+    else:
+        _archived_lengths[key] = len(content)
 
 
 def archive_logs(

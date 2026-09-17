@@ -335,6 +335,8 @@ async def main():
             )
 
     last_log = 0
+    pre_entry_wait_round = None
+    next_pre_entry_wait_log = None
 
     # Last known position price used as an emergency reference.
     last_known_position_price = None
@@ -405,6 +407,7 @@ async def main():
 
                         archive_log_file(
                             LOG_FILE,
+                            clear=False,
                         )
 
                 logging.info(
@@ -480,7 +483,32 @@ async def main():
                 # NORMAL STATUS LOG
                 # =================================================
 
-                if now - last_log >= 2:
+                should_log_status = False
+
+                # Before the entry window, log once at the first observed
+                # value and then at 20-second marks.
+                if remaining > cfg.entry_window_seconds:
+
+                    if pre_entry_wait_round != current_round_id:
+                        pre_entry_wait_round = current_round_id
+                        next_pre_entry_wait_log = (
+                            int(remaining // 20) * 20
+                        )
+                        should_log_status = True
+
+                    elif (
+                        next_pre_entry_wait_log is not None
+                        and remaining <= next_pre_entry_wait_log
+                    ):
+                        should_log_status = True
+                        next_pre_entry_wait_log -= 20
+
+                else:
+                    # Keep the existing 2-second cadence inside the
+                    # entry window.
+                    should_log_status = now - last_log >= 2
+
+                if should_log_status:
 
                     log_price = decision.contract_price
 
